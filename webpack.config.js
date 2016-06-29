@@ -49,6 +49,36 @@ module.exports = {
             },
             {
                 from: './fonts/**'
+            },
+            {
+                from: './bower_components/bootstrap/dist/css/bootstrap.css',
+                to: 'css',
+                flatten: true
+            },
+            {
+                from: './bower_components/bootstrap/dist/css/bootstrap.css.map',
+                to: 'css',
+                flatten: true
+            },
+            {
+                from: './bower_components/bootstrap-material-design/dist/css/bootstrap-material-design.css',
+                to: 'css',
+                flatten: true
+            },
+            {
+                from: './bower_components/bootstrap-material-design/dist/css/bootstrap-material-design.css.map',
+                to: 'css',
+                flatten: true
+            },
+            {
+                from: './bower_components/bootstrap-material-design/dist/css/ripples.css',
+                to: 'css',
+                flatten: true
+            },
+            {
+                from: './bower_components/bootstrap-material-design/dist/css/ripples.css.map',
+                to: 'css',
+                flatten: true
             }
         ],
             {
