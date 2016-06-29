@@ -1,0 +1,19 @@
+{
+  "environment": "development",
+  "bunyan-log": [
+    {
+      "level": "debug",
+      "stream": "stdout-pretty"
+    }
+  ],
+  "handlebars": {
+    "cache": false
+  },
+  "elasticsearch": {
+    "host": "localhost:9200"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "environment": "production",
+  "handlebars": {
+    "cache": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+	"apps" : [
+		{
+			"name": "patas-web",
+			"script": "app.js",
+			"exec_mode": "fork_mode",
+			"env": {
+				"APP_PORT": "3000"
+			},
+			"env_production": {
+				"NODE_ENV": "PRD",
+				"APP_PORT": "3000"
+			}
+		}
+	]
+}
