@@ -1,17 +1,11 @@
 {
-  "index": "messi",
+  "index": "nodelicious",
   "type": "users",
   "body": {
     "users": {
       "properties": {
-        "firstname": { "type": "string"},
-        "lastname": { "type": "string"},
-        "email": { "type": "string", "index":  "not_analyzed" },
-        "social": { "type": "boolean"},
-        "social_id": { "type": "string"},
-        "displayName": { "type": "string"},
-        "provider": { "type": "string"},
-        "created_date": { "type": "date"}
+        "email": { "type": "string", "index": "not_analyzed" },
+        "password": { "type": "string", "index": "not_analyzed", "include_in_all" : false }
       }
     }
   }

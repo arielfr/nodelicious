@@ -15,5 +15,11 @@
   "redis": {
     "host": "localhost",
     "port": 6379
+  },
+  "page": {
+    "title": "Nodelicious - Online Bookmark",
+    "navbar": {
+      "title": "Nodelicious"
+    }
   }
 }

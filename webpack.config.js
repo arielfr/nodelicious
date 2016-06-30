@@ -6,7 +6,7 @@ var webpack = require("webpack"),
 module.exports = {
     entry: {
         index: './webpack/src/scripts/index.js',
-        vendors: ['./bower_components/bootstrap/dist/js/bootstrap.js']
+        vendors: ['./bower_components/bootstrap/dist/js/bootstrap.js', './bower_components/bootstrap-material-design/dist/js/material.js', './bower_components/bootstrap-material-design/dist/js/ripples.js']
     },
     output: {
         path: './assets',
@@ -57,16 +57,6 @@ module.exports = {
             },
             {
                 from: './bower_components/bootstrap/dist/css/bootstrap.css.map',
-                to: 'css',
-                flatten: true
-            },
-            {
-                from: './bower_components/bootstrap-material-design/dist/css/bootstrap-material-design.css',
-                to: 'css',
-                flatten: true
-            },
-            {
-                from: './bower_components/bootstrap-material-design/dist/css/bootstrap-material-design.css.map',
                 to: 'css',
                 flatten: true
             },

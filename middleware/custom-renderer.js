@@ -5,7 +5,10 @@ var sync = require('synchronize'),
 
 module.exports = function(app){
     var defaultModel = {
-        title: 'Nodelicious - Online Bookmark'
+        title: global.config.get('page.title'),
+        navbar: {
+            title: global.config.get('page.navbar.title')
+        }
     };
 
     //This will append defualt configuration to all models
