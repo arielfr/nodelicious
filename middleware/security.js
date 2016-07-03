@@ -1,7 +1,6 @@
 var passport = require('passport'),
     session = require('express-session'),
     localStrategy = require('passport-local').Strategy,
-    facebookStrategy = require('passport-facebook').Strategy,
     redisStore = require('connect-redis')(session),
     sync = require('synchronize'),
     bcrypt = require('bcrypt'),
@@ -37,23 +36,21 @@ module.exports = function(app){
 
     //Local strategy
     passport.use(new localStrategy(
-        {usernameField: 'username', passReqToCallback: true},
-        function(req, username, password, done){
+        {usernameField: 'email', passReqToCallback: true},
+        function(req, email, password, done){
             sync.fiber(function(){
                 try{
-                    var user = userService.getUserByEmail(username);
+                    var user = userService.getUserByEmail(email);
 
                     if( _.isEmpty(user) ){
-                        user = userService.registerLocalUser({
-                            firstname: req.body.firstname,
-                            lastname: req.body.lastname,
-                            email: username,
-                            password: password,
-                            created_date: moment().toDate()
-                        });
-                    }else{
-                        user.already = true;
+                        throw new Error('The user with email ' + email + ' doesnt exists');
                     }
+
+                    if( !bcrypt.compareSync(password, user.password) ){
+                        throw new Error('The password is not valid');
+                    }
+
+                    global.log.debug('El usuario %s ha ingresado exitosamente', user.email);
 
                     return done(null, user);
                 }catch(e){
@@ -62,38 +59,4 @@ module.exports = function(app){
             });
         }
     ));
-
-    passport.use(new facebookStrategy({
-        clientID: '1791767634442831',
-        clientSecret: '387ce258bbf1da2d94e4698188fe5484',
-        callbackURL: "http://www.quedatemessi.com.ar/login/facebook",
-        profileFields: ['id', 'displayName', 'emails']
-    }, function(accessToken, refreshToken, profile, done){
-        sync.fiber(function(){
-            try{
-                if(!profile){
-                    return done(new Error('Ha ocurrido un error'), false);
-                }
-
-                var user = userService.getUserBySocialId(profile.id);
-
-                if(!user){
-                    user = userService.registerSocialUser({
-                        social_id: profile.id,
-                        email: profile.emails[0].value,
-                        social: true,
-                        displayName: profile.displayName,
-                        provider: profile.provider,
-                        created_date: moment().toDate()
-                    });
-                }else{
-                    user.already = true;
-                }
-
-                return done(null, user);
-            }catch(e){
-                return done(e, false);
-            }
-        });
-    }));
 };

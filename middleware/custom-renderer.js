@@ -23,8 +23,13 @@ module.exports = function(app){
 
     app.use(function(req, res, next){
         res.renderSync = function(view, model){
+            model.isLogged = (req.user) ? true : false;
+            model.user = req.user;
+
             model = loadDefaultModel(model);
+
             var pageRender = await(res.render(view, model, defer()));
+
             res.send(pageRender);
         };
 

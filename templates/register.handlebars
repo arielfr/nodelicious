@@ -1,0 +1,51 @@
+{{#extend "main"}}
+    {{#content "header" mode="append"}}
+        <link rel="stylesheet" href="/css/login.css">
+    {{/content}}
+    {{#content "body"}}
+        {{#extend "modules/navbar"}}{{/extend}}
+
+        <div id="login" class="container">
+            {{#if error}}
+                <div class="row">
+                    <div class="alert alert-danger" role="alert">
+                        <span>{{error}}</span>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="row">
+                <div class="col-sm-1 col-md-3"></div>
+                <div class="col-xs-12 col-sm-9 col-md-6">
+                    <form action="/register/local" method="POST" class="well">
+                        <legend>Register</legend>
+
+                        <div class="form-group">
+                            <label for="f-email">Email *</label>
+                            <input id="f-email" type="email" name="email" class="form-control" placeholder="example@dominio.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="f-firstname">First Name *</label>
+                            <input id="f-firstname" type="text" name="firstname" class="form-control" placeholder="First Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="f-lastname">Last Name *</label>
+                            <input id="f-lastname" type="text" name="lastname" class="form-control" placeholder="Last Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="f-password">Password *</label>
+                            <input id="f-password" type="password" name="password" class="form-control" placeholder="password" required>
+                        </div>
+                        <div class="text-right">
+                            <button class="btn btn-raised btn-info" type="submit">Register</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-sm-1 col-md-3"></div>
+            </div>
+        </div>
+    {{/content}}
+
+    {{#content "scripts" mode="append"}}
+        <script type="application/javascript" src="/js/login.js"></script>
+    {{/content}}
+{{/extend}}

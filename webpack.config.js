@@ -6,6 +6,7 @@ var webpack = require("webpack"),
 module.exports = {
     entry: {
         index: './webpack/src/scripts/index.js',
+        login: './webpack/src/scripts/login.js',
         vendors: ['./bower_components/bootstrap/dist/js/bootstrap.js', './bower_components/bootstrap-material-design/dist/js/material.js', './bower_components/bootstrap-material-design/dist/js/ripples.js']
     },
     output: {
