@@ -11,20 +11,22 @@
         </div>
 
         <div class="collapse navbar-collapse" id="n-navbar">
-            <ul class="nav navbar-nav">
-                <li>
-                    <a href="#">TAG CLOUD</a>
-                </li>
-                <li>
-                    <a href="#">PICTURE WALL</a>
-                </li>
-                <li>
-                    <a href="#">DAILY</a>
-                </li>
-                <li>
-                    <a href="#">SEARCH</a>
-                </li>
-            </ul>
+            {{#if isLogged}}
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="#">TAG CLOUD</a>
+                    </li>
+                    <li>
+                        <a href="#">PICTURE WALL</a>
+                    </li>
+                    <li>
+                        <a href="#">DAILY</a>
+                    </li>
+                    <li>
+                        <a href="#">SEARCH</a>
+                    </li>
+                </ul>
+            {{/if}}
             <ul class="nav navbar-nav navbar-right">
                 {{#if isLogged}}
                     <li class="dropdown">
@@ -38,9 +40,6 @@
                         </ul>
                     </li>
                 {{else}}
-                    <li class="{{#if navbar.login}}active{{/if}}">
-                        <a href="/login">Log In <i class="material-icons">account_circle</i></a>
-                    </li>
                     <li class="{{#if navbar.register}}active{{/if}}">
                         <a href="/register">Register</a>
                     </li>

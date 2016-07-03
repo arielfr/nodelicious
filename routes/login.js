@@ -4,10 +4,6 @@ var express = require('express'),
     authFilter = require('../middleware/authentication-filter'),
     _ = require('lodash');
 
-login.get('/login', authFilter.notLoggedIn, function(req, res, next){
-    res.renderSync('login', { navbar: { login: true }, error: req.flash('error')});
-});
-
 /**
  * Logout user
  */

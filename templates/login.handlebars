@@ -5,7 +5,7 @@
     {{#content "body"}}
         {{#extend "modules/navbar"}}{{/extend}}
 
-        <div id="login" class="container">
+        <div class="container">
             {{#if error}}
                 <div class="row">
                     <div class="alert alert-danger" role="alert">
@@ -30,8 +30,8 @@
                         <div class="text-right">
                             <button class="btn btn-raised btn-info" type="submit">LogIn</button>
                         </div>
-                        <p class="text-center top20">
-                            <a href="#">Olvide mi contraseña</a>
+                        <p class="text-center top10">
+                            <a href="/register">Dont have an account</a> | <a href="#">Forgot my Password</a>
                         </p>
                     </form>
                 </div>
