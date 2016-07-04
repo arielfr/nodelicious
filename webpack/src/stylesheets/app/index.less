@@ -1,1 +1,84 @@
 @import "../modules/base";
+
+.link{
+  padding: 0px !important;
+}
+
+.link .title,
+.link .content,
+.link .others{
+  padding: 15px;
+}
+
+.link .title{
+  border-bottom: 1px solid #ddd;
+}
+
+.link .title a{
+  cursor: pointer;
+  color: black;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.link .title a:hover{
+  color: #999;
+}
+
+.link .content{
+}
+
+.link .content p{
+  margin-bottom: 0px;
+}
+
+.link .others{
+  background-color: #f2f2f2;
+}
+
+.link .others .link-tag{
+  display: inline-block;
+}
+
+.link .others .link-tag a{
+  cursor: pointer;
+  display: block;
+  font-size: 14px;
+  color: #888;
+  text-decoration: none;
+  padding: 3px 10px;
+  background-color: #ddd;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  font-weight: normal;
+}
+
+.link .others .link-tag a:hover{
+  background-color: #ccc;
+}
+
+.link .others .url-container{
+}
+
+.link .others .url-container a.url{
+  color: #999;
+  text-decoration: none;
+  font-size: 12px;
+}
+
+.link .others .url-container a.qr{
+  background-image: url(/images/qrcode.png);
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  cursor: -ms-zoom-in;
+  cursor: -webkit-zoom-in;
+  cursor: zoom-in;
+  display: block;
+  float: right;
+  right: 24px;
+  margin-left: 5px;
+  width: 24px;
+  height: 24px;
+}
