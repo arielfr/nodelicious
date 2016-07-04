@@ -40,6 +40,9 @@
                         </ul>
                     </li>
                 {{else}}
+                    <li class="{{#if navbar.login}}active{{/if}}">
+                        <a href="/login">Log In</a>
+                    </li>
                     <li class="{{#if navbar.register}}active{{/if}}">
                         <a href="/register">Register</a>
                     </li>

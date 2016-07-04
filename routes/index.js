@@ -4,11 +4,7 @@ var express = require('express'),
     moment = require('moment');
 
 index.get('/', function(req, res, next){
-    if(req.user){
-        res.renderSync('index', {});
-    }else{
-        res.renderSync('login', {});
-    }
+    res.renderSync('index', {});
 });
 
 module.exports = index;
