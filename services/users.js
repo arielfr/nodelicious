@@ -8,11 +8,19 @@ var userService = function(){};
 userService.prototype.getUserByEmail = function(email){
     var esClient = global.esClient;
 
-    var user = _(esClient.searchSync({
+    var user = esClient.searchSync({
         index: 'nodelicious',
         type: 'users',
         body: new bodyBuilder().filter('term', 'email', email.toLowerCase()).build()
-    }).hits.hits).map('_source').first();
+    }).hits.hits;
+
+    //Add the id to the user element
+    user = _(_(user).map(function(element){
+        var source = element._source;
+        //Adding id to the user model
+        source.id = element._id;
+        return source;
+    })).first();
 
     return user;
 };
