@@ -1,4 +1,6 @@
 @import "utils";
+@import "fixed-link";
+@import "link-element";
 
 /* ---- Bootstrap Variables ---- */
 @screen-xs: 480px;
@@ -15,9 +17,11 @@ html {
 }
 
 @media (min-width: @screen-sm) {
-  .navbar,
+  .navbar{
+    font-size: 16px;
+  }
+
   .navbar .navbar-brand{
-    font-weight: 300;
-    font-size: 18px;
+    font-size: 24px;
   }
 }

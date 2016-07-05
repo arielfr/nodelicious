@@ -29,9 +29,14 @@
             {{/if}}
             <ul class="nav navbar-nav navbar-right">
                 {{#if isLogged}}
+                    <li>
+                        <a href="/link/new">
+                            <i class="material-icons">link</i>
+                        </a>
+                    </li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                            Hola {{user.firstname}} <span class="caret"></span>
+                            Hi {{user.firstname}} <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu">
                             <li>

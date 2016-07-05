@@ -1,6 +1,7 @@
 var handlebars  = require('express-handlebars'),
     layouts = require('express-handlebars-layouts'),
-    swag = require('swag');
+    swag = require('swag'),
+    moment = require('moment');
 
 module.exports = function(app){
     var hbs = handlebars.create({
@@ -16,6 +17,10 @@ module.exports = function(app){
     //Override i18n - Adding helper for i18n
     hbs.handlebars.registerHelper('i18n', function(phrase){
         return global.i18n.__(phrase);
+    });
+    //Moment format
+    hbs.handlebars.registerHelper('linkDateFormat', function(date){
+        return moment(date).fromNow();
     });
 
     app.engine('handlebars', hbs.engine);

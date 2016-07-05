@@ -8,8 +8,10 @@
         <div class="container">
             {{#if error}}
                 <div class="row">
-                    <div class="alert alert-danger" role="alert">
-                        <span>{{error}}</span>
+                    <div class="col-xs-12">
+                        <div class="alert alert-danger" role="alert">
+                            <span>{{error}}</span>
+                        </div>
                     </div>
                 </div>
             {{/if}}
@@ -21,7 +23,7 @@
 
                         <div class="form-group">
                             <label for="f-username">Email</label>
-                            <input id="f-username" type="email" name="email" class="form-control" placeholder="example@dominio.com" required>
+                            <input id="f-username" type="email" name="email" class="form-control" placeholder="example@dominio.com" value="{{body.email}}" required>
                         </div>
                         <div class="form-group">
                             <label for="f-password">Password</label>

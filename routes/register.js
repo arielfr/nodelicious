@@ -6,12 +6,13 @@ var express = require('express'),
     userService = require('../services/users');
 
 register.get('/register', authFilter.notLoggedIn, function(req, res, next){
-    res.renderSync('register', { navbar: { register: true }, error: req.flash('error')});
+    res.renderSync('register', { navbar: { register: true }, error: req.flash('error'), body: _(req.flash('body')).first() });
 });
 
 register.post('/register/local', function(req, res, next){
     if( _.isEmpty(req.body.firstname) || _.isEmpty(req.body.lastname) || _.isEmpty(req.body.email) || _.isEmpty(req.body.password) ){
         req.flash('error', 'Must complete all the fields (*)');
+        req.flash('body', req.body);
         return res.redirect('/register');
     }
 

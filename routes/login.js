@@ -5,7 +5,7 @@ var express = require('express'),
     _ = require('lodash');
 
 login.get('/login', authFilter.notLoggedIn, function(req, res, next){
-    res.renderSync('login', { navbar: { login: true }, error: req.flash('error')});
+    res.renderSync('login', { navbar: { login: true }, error: req.flash('error'), body: _(req.flash('body')).first() });
 });
 
 /**
@@ -23,7 +23,7 @@ login.get('/login/facebook', passport.authenticate('facebook', { successRedirect
  */
 login.post('/login/local', function(req, res, next){
     if( _.isEmpty(req.body.email) ){
-        req.flash('error', 'Los campos email son obligatorios');
+        req.flash('error', 'The email is mandatory');
         return res.redirect('/login');
     }
 
@@ -31,6 +31,11 @@ login.post('/login/local', function(req, res, next){
         if(err){
             global.log.error(err);
             req.flash('error', err.message);
+
+            //Remove the password from the body
+            delete req.body.password;
+            req.flash('body', req.body);
+
             return res.redirect('/login');
         }
 
@@ -38,6 +43,11 @@ login.post('/login/local', function(req, res, next){
             if(err){
                 global.log.error(err);
                 req.flash('error', err.message);
+
+                //Remove the password from the body
+                delete req.body.password;
+                req.flash('body', req.body);
+
                 return res.redirect('/login');
             }
             return res.redirect('/');

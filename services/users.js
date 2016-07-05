@@ -1,7 +1,8 @@
 var bodyBuilder = require('bodybuilder'),
     bcrypt = require('bcrypt'),
     _ = require('lodash'),
-    moment = require('moment');
+    moment = require('moment'),
+    uuid = require('node-uuid');
 
 var userService = function(){};
 
@@ -29,6 +30,7 @@ userService.prototype.registerUser = function(user){
     var esClient = global.esClient;
 
     //Lowercase the email
+    user.uuid = uuid.v1();
     user.email = user.email.toLowerCase();
     user.password = bcrypt.hashSync(user.password, 10);
     user.created_date = moment().toDate();

@@ -11,7 +11,7 @@ global.config = config;
 global.__basedir = __dirname;
 
 //Setting up momentjs library locale
-moment.locale('es');
+//moment.locale('es');
 
 //Initializers
 require('./initializers/logger.js')(app);
