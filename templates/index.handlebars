@@ -6,6 +6,12 @@
         {{#extend "modules/navbar"}}{{/extend}}
         {{#extend "modules/fixed-link"}}{{/extend}}
 
+        <div class="container">
+            {{#each links}}
+                {{#extend "modules/link-element" link=this}}{{/extend}}
+            {{/each}}
+        </div>
+
     {{/content}}
 
     {{#content "scripts" mode="append"}}

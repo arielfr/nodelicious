@@ -1,10 +1,15 @@
 var express = require('express'),
     index = express.Router(),
     _ = require('lodash'),
-    moment = require('moment');
+    moment = require('moment'),
+    linkService = require('../services/links');
 
 index.get('/', function(req, res, next){
-    res.renderSync('index', {});
+    var model = {};
+
+    model.links = linkService.getLinks();
+
+    res.renderSync('index', model);
 });
 
 module.exports = index;

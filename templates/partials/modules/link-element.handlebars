@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-xs-12">
+        <div class="well link">
+            <div class="title">
+                <div class="row">
+                    <div class="col-sm-12 col-md-10">
+                        {{#if link.snippet}}
+                            <a href="/link/view?uuid={{link.uuid}}">{{link.title}}</a>
+                        {{else}}
+                            <a href="{{link.url}}">{{link.title}}</a>
+                        {{/if}}
+                    </div>
+                    <div class="col-sm-12 col-md-2 text-right date">
+                        <a href="/link/view?uuid={{link.uuid}}">{{linkDateFormat link.created_date}}</a>
+                    </div>
+                </div>
+            </div>
+            {{#if link.description}}
+                <div class="content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            {{{link.description}}}
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="others">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6">
+                        {{#any link.tags}}
+                            {{#each link.tags}}
+                                <span class="link-tag">
+                                                    <a>{{this}}</a>
+                                                </span>
+                            {{/each}}
+                        {{/any}}
+                    </div>
+                    {{#if link.snippet}}
+                        <div class="col-sm-8 col-md-5 url-container text-right">
+                            <a class="url" href="/link/view?uuid={{link.uuid}}">{{link.uuid}}</a>
+                        </div>
+                    {{else}}
+                        <div class="col-sm-8 col-md-5 url-container text-right">
+                            <a class="url" href="{{link.url}}">{{link.url}}</a>
+                        </div>
+                    {{/if}}
+                    <div class="col-sm-4 col-md-1 url-container text-right">
+                        <a class="qr"></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
