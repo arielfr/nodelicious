@@ -1,5 +1,3 @@
-
-
 $('.link a.qr').click(function(event){
     var customModal = $('<div class="custom-modal modal"><div class="modal-dialog"></div></div>');
 
