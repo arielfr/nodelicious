@@ -21,6 +21,8 @@ linkService.prototype.getLinkByUUID = function(uuid){
         if(_.isEmpty(source.tags)){
             delete source.tags;
         }
+        //Convert to HTML with markdown
+        source.description = global.showdown.makeHtml(source.description);
         return source;
     })).first();
 

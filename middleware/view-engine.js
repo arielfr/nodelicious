@@ -18,7 +18,7 @@ module.exports = function(app){
     hbs.handlebars.registerHelper('i18n', function(phrase){
         return global.i18n.__(phrase);
     });
-    //Moment format
+    //Moment format for links
     hbs.handlebars.registerHelper('linkDateFormat', function(date){
         return moment(date).fromNow();
     });

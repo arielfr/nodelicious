@@ -16,6 +16,7 @@ global.__basedir = __dirname;
 //Initializers
 require('./initializers/logger.js')(app);
 require('./initializers/elasticsearch.js')(app);
+require('./initializers/showdown.js')(app);
 
 //Middlewares
 require('./middleware/custom-express.js')(app);

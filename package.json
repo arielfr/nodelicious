@@ -39,6 +39,8 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
+    "showdown": "^1.4.2",
+    "showdown-youtube": "^1.1.0",
     "style-loader": "^0.13.1",
     "superexpress": "git@github.com:arielfr/superexpress.git",
     "swag": "^0.7.0",

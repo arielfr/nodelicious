@@ -33,7 +33,10 @@
                                 <textarea class="form-control" rows="4" id="f-description" name="description" >{{body.description}}</textarea>
                             </div>
                             <div>
-                                <span>You can write the description using <a href="https://help.github.com/categories/writing-on-github/">GitHub Flavored Markdown</a>. You can see the offical CheatSheet <a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Here-Cheatsheet">here</a>.</span>
+                                <span>You can write the description using <a href="https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax" target="_blank">showdownjs markdown</a>.</span>
+                            </div>
+                            <div>
+                                <span>To embed a Youtube video: ![youtube video](https://www.youtube.com/watch?v=1UKxKFmv1sY). Documentation <a href="https://github.com/showdownjs/youtube-extension" target="_blank">here</a>.</span>
                             </div>
                             <div class="form-group">
                                 <label for="f-tags">Tags</label>
@@ -76,7 +79,7 @@
                                 <div class="content">
                                     <div class="row">
                                         <div class="col-sm-12">
-                                            <p>{{link.description}}</p>
+                                            {{{link.description}}}
                                         </div>
                                     </div>
                                 </div>
