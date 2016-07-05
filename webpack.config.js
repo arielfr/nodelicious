@@ -71,6 +71,11 @@ module.exports = {
                 from: './bower_components/bootstrap-material-design/dist/css/ripples.css.map',
                 to: 'css',
                 flatten: true
+            },
+            {
+                from: './webpack/src/scripts/libs/qrcodejs.min.js',
+                to: 'js',
+                flatten: true
             }
         ],
             {
