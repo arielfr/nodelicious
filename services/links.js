@@ -6,28 +6,86 @@ var bodyBuilder = require('bodybuilder'),
 
 var linkService = function(){};
 
-linkService.prototype.getLinks = function(size, from){
+linkService.prototype.getTagsCount = function(){
+    var esClient = global.esClient;
+
+    var tags = esClient.searchSync({
+        index: 'nodelicious',
+        type: 'links',
+        body: {
+            "size": 0,
+            "aggs": {
+                "tags": {
+                    "terms": {
+                        "field": "tags",
+                        "size": 1000
+                    }
+                }
+            }
+        }
+    });
+
+    var buckets = tags.aggregations.tags.buckets;
+
+    var tagCloud = [];
+
+    if(!_.isEmpty(buckets)){
+        _.forEach(buckets, function(bucket){
+            tagCloud.push({
+                key: bucket.key,
+                count: bucket.doc_count
+            });
+        });
+    }
+
+    return tagCloud;
+};
+
+linkService.prototype.getLinks = function(user, size, from){
     var esClient = global.esClient,
         from = (from) ? from : 0,
-        size = (size) ? size : 25;
+        size = (size) ? size : 25,
+        getPrivate = (user) ? true : false;
+
+    var query = {};
+
+    query = {
+        "from": from,
+        "size": size,
+        "sort": [
+            {
+                "created_date": {
+                    "order": "desc"
+                }
+            }
+        ],
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "term": {
+                            "public": {
+                                "value": true
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    };
+
+    if(getPrivate){
+        query.query.bool.should.push({
+            term: {
+                public: false
+            }
+        });
+    }
 
     var links = esClient.searchSync({
         index: 'nodelicious',
         type: 'links',
-        body: {
-            "from": from,
-            "size": size,
-            "sort": [
-                {
-                    "created_date": {
-                        "order": "desc"
-                    }
-                }
-            ],
-            "query": {
-                "match_all": {}
-            }
-        }
+        body: query
     }).hits.hits;
 
     //Add the id to the user element

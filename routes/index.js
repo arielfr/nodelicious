@@ -7,7 +7,7 @@ var express = require('express'),
 index.get('/', function(req, res, next){
     var model = {};
 
-    model.links = linkService.getLinks();
+    model.links = linkService.getLinks(req.user);
 
     res.renderSync('index', model);
 });
