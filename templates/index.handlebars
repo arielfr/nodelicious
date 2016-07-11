@@ -7,6 +7,16 @@
         {{#extend "modules/fixed-link"}}{{/extend}}
 
         <div class="container">
+            {{#if error}}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="alert alert-danger" role="alert">
+                            <span>{{error}}</span>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+
             {{#each links}}
                 {{#extend "modules/link-element" link=this}}{{/extend}}
             {{/each}}

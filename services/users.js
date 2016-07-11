@@ -35,11 +35,14 @@ userService.prototype.registerUser = function(user){
     user.password = bcrypt.hashSync(user.password, 10);
     user.created_date = moment().toDate();
 
-    esClient.indexSync({
+    var registeredUser = esClient.indexSync({
         index: 'nodelicious',
         type: 'users',
         body: user
     });
+
+    //Adding the id indexed to the user that is going to be logged in
+    user.id = registeredUser._id;
 
     return user;
 };

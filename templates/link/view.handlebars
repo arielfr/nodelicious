@@ -1,0 +1,16 @@
+{{#extend "main"}}
+    {{#content "header" mode="append"}}
+        <link rel="stylesheet" href="/css/link.css">
+    {{/content}}
+    {{#content "body"}}
+        {{#extend "modules/navbar"}}{{/extend}}
+
+        <div class="container">
+            {{#extend "modules/link-element" link=link}}{{/extend}}
+        </div>
+    {{/content}}
+
+    {{#content "scripts" mode="append"}}
+        <script type="application/javascript" src="/js/view.js"></script>
+    {{/content}}
+{{/extend}}
