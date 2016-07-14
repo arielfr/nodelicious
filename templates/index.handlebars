@@ -20,6 +20,8 @@
             {{#each links}}
                 {{#extend "modules/link-element" link=this parent=../this}}{{/extend}}
             {{/each}}
+
+            {{#extend "modules/delete-modal"}}{{/extend}}
         </div>
 
     {{/content}}

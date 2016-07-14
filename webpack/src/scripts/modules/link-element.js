@@ -1,4 +1,6 @@
-$('.link a.qr').click(function(event){
+$('.link a.qr').on('click', function(event){
+    event.preventDefault();
+
     var customModal = $('<div class="custom-modal modal"><div class="modal-dialog"></div></div>');
 
     $('body').append(customModal);
@@ -34,4 +36,19 @@ $('.link a.qr').click(function(event){
     });
 
     qrcode.makeCode()
+});
+
+
+$('.link .others a.action.delete').on('click', function(event){
+    event.preventDefault();
+
+    var uuid = $(this).parents('.link').attr('uuid');
+
+    $('#delete-modal').modal('show');
+
+    $('#delete-modal .btn.confirm').off('click');
+
+    $('#delete-modal .btn.confirm').on('click', function(){
+        window.location = '/link/delete?uuid=' + uuid;
+    });
 });

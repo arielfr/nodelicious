@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-xs-12">
-        <div class="well link">
+        <div class="well link" uuid="{{link.uuid}}">
             <div class="title">
                 <div class="row">
                     <div class="col-sm-12 col-md-10">
@@ -46,11 +46,11 @@
                     {{/if}}
                     <div class="col-sm-4 col-md-2 text-right">
                         {{#if parent.isLogged}}
-                            {{#if this.isOwner}}
-                                <a class="action" href="/link/edit?uuid={{link.uuid}}">
+                            {{#if link.isOwner}}
+                                <a class="action edit" href="/link/edit?uuid={{link.uuid}}">
                                     <i class="material-icons">edit</i>
                                 </a>
-                                <a class="action" href="/link/delete?uuid={{link.uuid}}">
+                                <a href="#" class="action delete">
                                     <i class="material-icons">delete</i>
                                 </a>
                             {{/if}}
