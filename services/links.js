@@ -77,6 +77,7 @@ linkService.prototype.getLinks = function(user, from, size){
         }
         //Convert to HTML with markdown
         source.description = global.showdown.makeHtml(source.description);
+        source.isOwner = (user.id == source.creator_id);
         return source;
     })).value();
 

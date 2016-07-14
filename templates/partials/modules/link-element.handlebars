@@ -36,15 +36,25 @@
                         {{/any}}
                     </div>
                     {{#if link.snippet}}
-                        <div class="col-sm-8 col-md-5 url-container text-right">
+                        <div class="col-sm-8 col-md-5 text-right">
                             <a class="url" href="/link/view?uuid={{link.uuid}}">{{link.uuid}}</a>
                         </div>
                     {{else}}
-                        <div class="col-sm-8 col-md-5 url-container text-right">
+                        <div class="col-sm-8 col-md-4 text-right">
                             <a class="url" href="{{link.url}}">{{link.url}}</a>
                         </div>
                     {{/if}}
-                    <div class="col-sm-4 col-md-1 url-container text-right">
+                    <div class="col-sm-4 col-md-2 text-right">
+                        {{#if parent.isLogged}}
+                            {{#if this.isOwner}}
+                                <a class="action" href="/link/edit?uuid={{link.uuid}}">
+                                    <i class="material-icons">edit</i>
+                                </a>
+                                <a class="action" href="/link/delete?uuid={{link.uuid}}">
+                                    <i class="material-icons">delete</i>
+                                </a>
+                            {{/if}}
+                        {{/if}}
                         <a class="qr"></a>
                     </div>
                 </div>

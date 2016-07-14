@@ -18,6 +18,12 @@ module.exports = function(app){
     hbs.handlebars.registerHelper('i18n', function(phrase){
         return global.i18n.__(phrase);
     });
+    hbs.handlebars.registerHelper('snippet', function(snippet){
+        return eval(snippet);
+    });
+    hbs.handlebars.registerHelper('stringify', function(json){
+        return JSON.stringify(json);
+    });
     //Moment format for links
     hbs.handlebars.registerHelper('linkDateFormat', function(date){
         return moment(date).fromNow();

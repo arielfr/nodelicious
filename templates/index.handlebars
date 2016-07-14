@@ -18,7 +18,7 @@
             {{/if}}
 
             {{#each links}}
-                {{#extend "modules/link-element" link=this}}{{/extend}}
+                {{#extend "modules/link-element" link=this parent=../this}}{{/extend}}
             {{/each}}
         </div>
 
