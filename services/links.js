@@ -2,7 +2,8 @@ var bodyBuilder = require('bodybuilder'),
     bcrypt = require('bcrypt'),
     _ = require('lodash'),
     moment = require('moment'),
-    uuid = require('node-uuid');
+    uuid = require('node-uuid'),
+    sync = require('synchronize');
 
 var linkService = function(){};
 
@@ -77,7 +78,7 @@ linkService.prototype.getLinks = function(user, from, size, options){
 
     //Add the id to the user element
     links = _(_(links).map(function(hit){
-        return me.sanitizeLink(hit._source, user, options);
+        return me.sanitizeLink(hit._source, hit._id, user, options);
     })).value();
 
     return links;
@@ -100,7 +101,7 @@ linkService.prototype.getLinkByUUID = function(uuid, user, options){
 
     //Add the id to the user element
     link = _(_(link).map(function(hit){
-        return me.sanitizeLink(hit._source, user, options);
+        return me.sanitizeLink(hit._source, hit._id, user, options);
     })).first();
 
     return link;
@@ -119,13 +120,15 @@ linkService.prototype.createLink = function(user, link){
         body: link
     });
 
+    sync.await(setTimeout(sync.defer(), 500));
+
     return link;
 };
 
 linkService.prototype.updateLink = function(user, link){
     var me = this,
         esClient = global.esClient,
-        fromEs = me.getLinkByUUID(link.uuid, {id: true});
+        fromEs = me.getLinkByUUID(link.uuid, user, {id: true});
 
     link.creator_id = fromEs.creator_id;
 
@@ -142,38 +145,94 @@ linkService.prototype.updateLink = function(user, link){
         }
     });
 
+    sync.await(setTimeout(sync.defer(), 500));
+
     return link;
 };
 
 linkService.prototype.deleteLinkByUUID = function(user, uuid){
     var esClient = global.esClient;
 
-    var link = this.getLinkByUUID(uuid, {id: true});
+    var link = this.getLinkByUUID(uuid, user, {id: true});
 
     esClient.deleteSync({
         index: 'nodelicious',
         type: 'links',
         id: link.id
     });
+
+    sync.await(setTimeout(sync.defer(), 500));
 };
 
-linkService.prototype.getTagsCount = function(){
+linkService.prototype.getTagsCount = function(user){
     var esClient = global.esClient;
+
+    var query = {
+        "size": 0,
+        "aggs": {
+            "tags": {
+                "terms": {
+                    "field": "tags",
+                    "size": 1000
+                }
+            }
+        }
+    };
+
+    if(user){
+        query.query = {
+            "bool": {
+                "should": [
+                    {
+                        "term": {
+                            "public": {
+                                "value": false
+                            }
+                        }
+                    },
+                    {
+                        "bool": {
+                            "must": [
+                                {
+                                    "term": {
+                                        "public": {
+                                            "value": true
+                                        }
+                                    }
+                                },
+                                {
+                                    "term": {
+                                        "creator_id": {
+                                            "value": user.id
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }else{
+        query.query = {
+            bool: {
+                must: [
+                    {
+                        term: {
+                            public: {
+                                value: true
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
 
     var tags = esClient.searchSync({
         index: 'nodelicious',
         type: 'links',
-        body: {
-            "size": 0,
-            "aggs": {
-                "tags": {
-                    "terms": {
-                        "field": "tags",
-                        "size": 1000
-                    }
-                }
-            }
-        }
+        body: query
     });
 
     var buckets = tags.aggregations.tags.buckets;
@@ -192,7 +251,7 @@ linkService.prototype.getTagsCount = function(){
     return tagCloud;
 };
 
-linkService.prototype.sanitizeLink = function(link, user, options){
+linkService.prototype.sanitizeLink = function(link, id, user, options){
     if(_.isEmpty(link.tags)){
         delete link.tags;
     }
@@ -205,7 +264,7 @@ linkService.prototype.sanitizeLink = function(link, user, options){
     link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
 
     if(options.id){
-        link.id = hit._id;
+        link.id = id;
     }
 
     return link;

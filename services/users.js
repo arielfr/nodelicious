@@ -2,7 +2,8 @@ var bodyBuilder = require('bodybuilder'),
     bcrypt = require('bcrypt'),
     _ = require('lodash'),
     moment = require('moment'),
-    uuid = require('node-uuid');
+    uuid = require('node-uuid'),
+    sync = require('synchronize');
 
 var userService = function(){};
 
@@ -43,6 +44,8 @@ userService.prototype.registerUser = function(user){
 
     //Adding the id indexed to the user that is going to be logged in
     user.id = registeredUser._id;
+
+    sync.await(setTimeout(sync.defer(), 500));
 
     return user;
 };
