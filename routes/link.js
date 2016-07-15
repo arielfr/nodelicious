@@ -12,7 +12,7 @@ link.get('/link/view', function(req, res, next){
     var model = {},
         user = req.user,
         uuid = req.query.uuid,
-        link = linkService.getLinkByUUID(uuid);
+        link = linkService.getLinkByUUID(uuid, user, {});
 
     if( !link.public ){
         if(!user){
@@ -64,7 +64,7 @@ link.get('/link/edit', authFilter.loggedIn, function(req, res, next){
         uuid = req.query.uuid,
         body = _(req.flash('body')).first(),
         fromForm = _.merge({}, body),
-        link = linkService.getLinkByUUID(uuid, { markdown: false });
+        link = linkService.getLinkByUUID(uuid, user, { markdown: false });
 
     if( _.isEmpty(link) ){
         return res.redirect('/');

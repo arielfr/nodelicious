@@ -5,13 +5,7 @@ $('.link a.qr').on('click', function(event){
 
     $('body').append(customModal);
 
-    $(this).find($('h3')).clone().appendTo('.custom-modal .modal-header');
-
-    $(this).find('.device-product, .device-details').clone().appendTo('.custom-modal .modal-body');
-
-    $('.custom-modal .hide').show();
-
-    $('.custom-modal').modal();
+    $('.custom-modal').modal('show');
 
     $('body').css('padding-right', '0px');
 
@@ -35,7 +29,7 @@ $('.link a.qr').on('click', function(event){
         correctLevel : QRCode.CorrectLevel.H
     });
 
-    qrcode.makeCode()
+    qrcode.makeCode();
 });
 
 
@@ -44,11 +38,17 @@ $('.link .others a.action.delete').on('click', function(event){
 
     var uuid = $(this).parents('.link').attr('uuid');
 
-    $('#delete-modal').modal('show');
+    var customModal = $('<div class="modal delete-modal"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button><h4 class="modal-title">Delete</h4></div><div class="modal-body"><p>Are you sure you want to delete this note?</p></div><div class="modal-footer"><button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button><button type="button" class="btn btn-primary confirm">Delete</button></div></div></div></div>');
 
-    $('#delete-modal .btn.confirm').off('click');
+    $('body').append(customModal);
 
-    $('#delete-modal .btn.confirm').on('click', function(){
+    $('.delete-modal').modal('show');
+
+    $('.delete-modal').on('hidden.bs.modal', function(){
+        $('.delete-modal').remove();
+    });
+
+    $('.delete-modal .btn.confirm').on('click', function(){
         window.location = '/link/delete?uuid=' + uuid;
     });
 });

@@ -6,8 +6,14 @@ var bodyBuilder = require('bodybuilder'),
 
 var linkService = function(){};
 
-linkService.prototype.getLinks = function(user, from, size){
-    var esClient = global.esClient,
+linkService.prototype.getLinks = function(user, from, size, options){
+    options = _.merge({}, {
+        id: false,
+        markdown: true
+    }, options);
+
+    var me = this,
+        esClient = global.esClient,
         from = (from) ? from : 0,
         size = (size) ? size : 25,
         getPrivate = (user) ? true : false;
@@ -71,21 +77,15 @@ linkService.prototype.getLinks = function(user, from, size){
 
     //Add the id to the user element
     links = _(_(links).map(function(hit){
-        var source = hit._source;
-        if(_.isEmpty(source.tags)){
-            delete source.tags;
-        }
-        //Convert to HTML with markdown
-        source.description = global.showdown.makeHtml(source.description);
-        source.isOwner = (user) ? ((user.id == source.creator_id) ? true : false) : false;
-        return source;
+        return me.sanitizeLink(hit._source, user, options);
     })).value();
 
     return links;
 };
 
-linkService.prototype.getLinkByUUID = function(uuid, options){
-    var esClient = global.esClient;
+linkService.prototype.getLinkByUUID = function(uuid, user, options){
+    var me = this,
+        esClient = global.esClient;
 
     options = _.merge({}, {
         id: false,
@@ -100,18 +100,7 @@ linkService.prototype.getLinkByUUID = function(uuid, options){
 
     //Add the id to the user element
     link = _(_(link).map(function(hit){
-        var source = hit._source;
-        if(_.isEmpty(source.tags)){
-            delete source.tags;
-        }
-        //Convert to HTML with markdown
-        if(options.markdown){
-            source.description = global.showdown.makeHtml(source.description);
-        }
-        if(options.id){
-            source.id = hit._id;
-        }
-        return source;
+        return me.sanitizeLink(hit._source, user, options);
     })).first();
 
     return link;
@@ -201,6 +190,25 @@ linkService.prototype.getTagsCount = function(){
     }
 
     return tagCloud;
+};
+
+linkService.prototype.sanitizeLink = function(link, user, options){
+    if(_.isEmpty(link.tags)){
+        delete link.tags;
+    }
+
+    //Convert to HTML with markdown
+    if(options.markdown){
+        link.description = global.showdown.makeHtml(link.description);
+    }
+
+    link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
+
+    if(options.id){
+        link.id = hit._id;
+    }
+
+    return link;
 };
 
 module.exports = new linkService();

@@ -1,12 +1,12 @@
 {{#extend "main"}}
     {{#content "header" mode="append"}}
-        <link rel="stylesheet" href="/css/link.css">
+        <link rel="stylesheet" href="/css/view.css">
     {{/content}}
     {{#content "body"}}
         {{#extend "modules/navbar"}}{{/extend}}
 
         <div class="container">
-            {{#extend "modules/link-element" link=link}}{{/extend}}
+            {{#extend "modules/link-element" link=link parent=../this}}{{/extend}}
         </div>
     {{/content}}
 
