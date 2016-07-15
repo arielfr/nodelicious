@@ -9,6 +9,10 @@
                         {{else}}
                             <a href="{{link.url}}">{{link.title}}</a>
                         {{/if}}
+
+                        {{#unless link.public}}
+                            <i class="locked material-icons">lock</i>
+                        {{/unless}}
                     </div>
                     <div class="col-sm-12 col-md-2 text-right date">
                         <a href="/link/view?uuid={{link.uuid}}">{{linkDateFormat link.created_date}}</a>
@@ -30,8 +34,8 @@
                         {{#any link.tags}}
                             {{#each link.tags}}
                                 <span class="link-tag">
-                                                    <a>{{this}}</a>
-                                                </span>
+                                    <a>{{this}}</a>
+                                </span>
                             {{/each}}
                         {{/any}}
                     </div>
