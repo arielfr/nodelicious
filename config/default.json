@@ -10,7 +10,8 @@
     "cache": false
   },
   "elasticsearch": {
-    "host": "localhost:9200"
+    "host": "localhost:9200",
+    "delay": 500
   },
   "redis": {
     "host": "localhost",

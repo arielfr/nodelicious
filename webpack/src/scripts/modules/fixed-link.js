@@ -1,3 +1,3 @@
 $('#fixed-link').click(function(event){
-    window.location = '/link/new';
+    window.location = '/link/add';
 });

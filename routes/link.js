@@ -3,7 +3,84 @@ var express = require('express'),
     _ = require('lodash'),
     moment = require('moment'),
     linkService = require('../services/links'),
-    authFilter = require('../middleware/authentication-filter');
+    authFilter = require('../middleware/authentication-filter'),
+    urlRegex = require('url-regex'),
+    sync = require('synchronize'),
+    request = require('sync-request'),
+    uuid = require('node-uuid');
+
+/**
+ * Add Link
+ */
+link.get('/link/add', authFilter.loggedIn, function(req, res, next){
+    var model = {};
+
+    model.uuid = uuid.v1();
+    model.error = req.flash('error');
+
+    res.renderSync('link/add', model);
+});
+
+/**
+ * Create new link
+ */
+link.get('/link/new', authFilter.loggedIn, function(req, res, next){
+    var model = {},
+        body = _(req.flash('body')).first(),
+        fromForm = _.merge({}, body),
+        url = req.query.url,
+        uuid = req.query.uuid;
+
+    //If it is the first time you enter, public is true by default
+    if(_.isEmpty(fromForm)){
+        fromForm.public = true;
+    }
+
+    fromForm.uuid = (uuid) ? uuid : uuid.v1();
+
+    //If the url is empty it is a snippet
+    fromForm.snippet = (url) ? false : true;
+
+    if(fromForm.url){
+        fromForm.url = fromForm.url;
+    }else{
+        if(url){
+            fromForm.url = decodeURI(url);
+        }else{
+            fromForm.description = 'Note: ';
+        }
+    }
+
+    if( fromForm.url && urlRegex().test(fromForm.url) ){
+        var titleRegex = /(<\s*title[^>]*>(.+?)<\s*\/\s*title)>/gi,
+            descriptionRegex = /<meta[^>]*name=[\"|\']description[\"|\'][^>]*content=[\"]([^\"]*)[\"][^>]*>/i;
+
+        try{
+            var response = request('GET', fromForm.url, {
+                    timeout: 8000
+                }),
+                pageContent = response.body.toString(),
+                titleMatch = titleRegex.exec(pageContent),
+                descriptionMatch = descriptionRegex.exec(pageContent);
+
+            if (titleMatch && titleMatch[2]) {
+                fromForm.title = titleMatch[2];
+            }
+
+            if (descriptionMatch && descriptionMatch[1]) {
+                fromForm.description = descriptionMatch[1];
+            }
+        }catch(e){
+        }
+    }
+
+    //What page to redirect page in case of error
+    model.action = 'new';
+    model.body = fromForm;
+    model.error = req.flash('error');
+
+    res.renderSync('link/editor', model);
+});
 
 /**
  * Show link
@@ -32,27 +109,6 @@ link.get('/link/view', function(req, res, next){
     model.link = link;
 
     res.renderSync('link/view', model);
-});
-
-/**
- * Create new link
- */
-link.get('/link/new', authFilter.loggedIn, function(req, res, next){
-    var model = {},
-        body = _(req.flash('body')).first(),
-        fromForm = _.merge({}, body);
-
-    //If it is the first time you enter, public is true by default
-    if(_.isEmpty(fromForm)){
-        fromForm.public = true;
-    }
-
-    //What page to redirect page in case of error
-    model.action = 'new';
-    model.body = fromForm;
-    model.error = req.flash('error');
-
-    res.renderSync('link/editor', model);
 });
 
 /**
@@ -128,7 +184,7 @@ link.post('/link/save', authFilter.loggedIn, function(req, res, next){
     }
 
     if((!title || !description) && isSnippet){
-        req.flash('error', 'If it is a code snippet, title and description are mandatory');
+        req.flash('error', 'If it is a code snippet or a note, title and description are mandatory');
         error = true;
     }
 

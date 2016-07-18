@@ -1,0 +1,40 @@
+{{#extend "main"}}
+    {{#content "header" mode="append"}}
+        <link rel="stylesheet" href="/css/editor.css">
+    {{/content}}
+    {{#content "body"}}
+        {{#extend "modules/navbar"}}{{/extend}}
+
+        <div class="container">
+            {{#if error}}
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="alert alert-danger" role="alert">
+                            <span>{{error}}</span>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
+            <div class="row">
+                <div class="col-xs-12">
+                    <form action="/link/new" method="GET" class="well">
+                        <input type="hidden" name="uuid" value="{{uuid}}">
+                        <legend>Add a new link</legend>
+                        <div class="form-group">
+                            <label for="f-url">URL</label>
+                            <input id="f-url" type="text" name="url" class="form-control" placeholder="Type a url..." value="{{body.url}}">
+                        </div>
+                        <div class="text-right">
+                            <a href="/" class="btn">Cancel</a>
+                            <button class="btn btn-raised btn-info" type="submit">Add Link</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {{/content}}
+
+    {{#content "scripts" mode="append"}}
+        <script type="application/javascript" src="/js/editor.js"></script>
+    {{/content}}
+{{/extend}}

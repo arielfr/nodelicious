@@ -44,9 +44,11 @@
     "style-loader": "^0.13.1",
     "superexpress": "git@github.com:arielfr/superexpress.git",
     "swag": "^0.7.0",
+    "sync-request": "^3.0.1",
     "synchronize": "^0.9.15",
     "synchronize-helper": "git@github.com:arielfr/synchronize-helper.git",
     "url-loader": "^0.5.7",
+    "url-regex": "^3.2.0",
     "webpack": "^1.13.1"
   }
 }

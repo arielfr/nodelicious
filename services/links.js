@@ -110,7 +110,6 @@ linkService.prototype.getLinkByUUID = function(uuid, user, options){
 linkService.prototype.createLink = function(user, link){
     var esClient = global.esClient;
 
-    link.uuid = uuid.v1();
     link.created_date = moment().toDate();
     link.creator_id = user.id;
 
@@ -120,7 +119,7 @@ linkService.prototype.createLink = function(user, link){
         body: link
     });
 
-    sync.await(setTimeout(sync.defer(), 500));
+    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
 
     return link;
 };
@@ -145,7 +144,7 @@ linkService.prototype.updateLink = function(user, link){
         }
     });
 
-    sync.await(setTimeout(sync.defer(), 500));
+    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
 
     return link;
 };
@@ -161,7 +160,7 @@ linkService.prototype.deleteLinkByUUID = function(user, uuid){
         id: link.id
     });
 
-    sync.await(setTimeout(sync.defer(), 500));
+    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
 };
 
 linkService.prototype.getTagsCount = function(user){

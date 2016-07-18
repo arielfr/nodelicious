@@ -45,7 +45,7 @@ userService.prototype.registerUser = function(user){
     //Adding the id indexed to the user that is going to be logged in
     user.id = registeredUser._id;
 
-    sync.await(setTimeout(sync.defer(), 500));
+    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
 
     return user;
 };
