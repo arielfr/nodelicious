@@ -7,7 +7,7 @@
         "uuid": { "type": "string", "index": "not_analyzed" },
         "url": { "type": "string" },
         "link": { "type": "string" },
-        "description": { "type": "string" },
+        "description": { "type": "string", "analyzer": "link_analyzer" },
         "tags": { "type": "string", "index": "not_analyzed" },
         "public": { "type": "boolean" },
         "snippet": { "type": "boolean" },

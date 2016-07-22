@@ -5,6 +5,34 @@
       "index": {
         "number_of_replicas": 0,
         "number_of_shards": 5
+      },
+      "analysis": {
+        "filter": {
+          "custom_shingle": {
+            "type": "shingle",
+            "min_shingle_size": "2",
+            "max_shingle_size": "3"
+          },
+          "spanish_stop": {
+            "type":       "stop",
+            "stopwords":  "_spanish_"
+          },
+          "spanish_stemmer": {
+            "type":       "stemmer",
+            "language":   "light_spanish"
+          }
+        },
+        "analyzer": {
+          "link_analyzer": {
+            "tokenizer": "standard",
+            "filter": [
+              "lowercase",
+              "spanish_stop",
+              "spanish_stemmer",
+              "custom_shingle"
+            ]
+          }
+        }
       }
     }
   }

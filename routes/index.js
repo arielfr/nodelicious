@@ -5,9 +5,16 @@ var express = require('express'),
     linkService = require('../services/links');
 
 index.get('/', function(req, res, next){
-    var model = {};
+    var model = {},
+        tagFilter = (req.query.tag) ? (Array.isArray(req.query.tag)) ? req.query.tag : [req.query.tag] : req.query.tag,
+        textFilter = req.query.text;
 
-    model.links = linkService.getLinks(req.user, 0, 100);
+    model.links = linkService.getLinks(req.user, 0, 100, {
+        filters: {
+            tags: tagFilter,
+            text: textFilter
+        }
+    });
     model.error = req.flash('error');
 
     res.renderSync('index', model);

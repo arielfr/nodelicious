@@ -10,7 +10,8 @@ var linkService = function(){};
 linkService.prototype.getLinks = function(user, from, size, options){
     options = _.merge({}, {
         id: false,
-        markdown: true
+        markdown: true,
+        filters: {}
     }, options);
 
     var me = this,
@@ -68,6 +69,25 @@ linkService.prototype.getLinks = function(user, from, size, options){
                 ]
             }
         });
+    }
+
+    //Adding filters
+    if(!_.isEmpty(options.filters)){
+        if(options.filters.tags){
+            query.query.bool.must.push({
+                "terms": {
+                    "tags": options.filters.tags
+                }
+            });
+        }
+        if(options.filters.text){
+            query.query.bool.must.push({
+                "query_string": {
+                    "fields": ["link", "description", "tags"],
+                    "query": options.filters.text.toLowerCase()
+                }
+            });
+        }
     }
 
     var links = esClient.searchSync({
