@@ -2,7 +2,8 @@ var express = require('express'),
     index = express.Router(),
     _ = require('lodash'),
     moment = require('moment'),
-    linkService = require('../services/links');
+    linkService = require('../services/links'),
+    utilService = require('../services/util');
 
 index.get('/', function(req, res, next){
     var model = {},
@@ -12,10 +13,9 @@ index.get('/', function(req, res, next){
     model.links = linkService.getLinks(req.user, 0, 100, {
         filters: {
             tags: tagFilter,
-            text: textFilter
+            text: utilService.sanitizePathVariable(textFilter)
         }
     });
-    model.error = req.flash('error');
 
     res.renderSync('index', model);
 });
