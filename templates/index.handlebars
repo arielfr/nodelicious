@@ -17,9 +17,23 @@
                 </div>
             {{/if}}
 
-            {{#each links}}
-                {{#extend "modules/link-element" link=this parent=../this}}{{/extend}}
-            {{/each}}
+            {{#if results.links}}
+                {{#extend "modules/filters-applied"}}{{/extend}}
+
+                {{#each results.links}}
+                    {{#extend "modules/link-element" link=this parent=../this}}{{/extend}}
+                {{/each}}
+            {{else}}
+                <div class="row">
+                    <div class="col-xs-12 text-center">
+                        <img src="/images/sad_star.png"/>
+
+                        <div class="no-links">
+                            <span>Sorry... No links found</span>
+                        </div>
+                    </div>
+                </div>
+            {{/if}}
         </div>
 
     {{/content}}

@@ -1,0 +1,19 @@
+{{#if filters}}
+    <div class="filter-applied">
+        <form action="/">
+            {{#any filters.tags}}
+                <span>
+                    {{../results.total}} results tagged
+                </span>
+                {{#each filters.tags}}
+                    <input type="hidden" name="tag" value="{{this}}"/>
+                    <div class="f-tag"><span>{{this}}</span> <span class="close-btn"><i class="material-icons">close</i></span></div>
+                {{/each}}
+            {{/any}}
+            {{#if filters.text}}
+                <input type="hidden" name="text" value="{{filters.text}}"/>
+                <span>{{results.total}} results for <strong>{{filters.text}}</strong></span>
+            {{/if}}
+        </form>
+    </div>
+{{/if}}

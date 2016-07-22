@@ -11,16 +11,17 @@
         </div>
 
         <div class="collapse navbar-collapse" id="n-navbar">
-            {{#if isLogged}}
-                <ul class="nav navbar-nav">
-                    <li>
-                        <a href="/tagcloud">TAG CLOUD</a>
-                    </li>
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="/tagcloud">TAG CLOUD</a>
+                </li>
+                {{#if isLogged}}
                     <li>
                         <a href="#">SEARCH</a>
                     </li>
-                </ul>
-            {{/if}}
+                {{/if}}
+            </ul>
+
             <ul class="nav navbar-nav navbar-right">
                 {{#if isLogged}}
                     <li>

@@ -1,6 +1,7 @@
 @import "utils";
 @import "fixed-link";
 @import "link-element";
+@import "filters-applied";
 
 /* ---- Bootstrap Variables ---- */
 @screen-xs: 480px;
@@ -11,6 +12,7 @@
 @screen-md-min: @screen-md;
 @screen-lg: 1200px;
 @screen-lg-min: @screen-lg;
+@grey-text: #999;
 
 html {
   overflow-y: scroll;
@@ -28,4 +30,13 @@ html {
 
 body.modal-open{
   padding-right: 0px !important;
+}
+
+.footer{
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.footer .total{
+  margin-bottom: 5px;
 }

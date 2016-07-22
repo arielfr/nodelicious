@@ -84,24 +84,27 @@ linkService.prototype.getLinks = function(user, from, size, options){
             query.query.bool.must.push({
                 "query_string": {
                     "fields": ["link", "description", "tags"],
-                    "query": options.filters.text.toLowerCase()
+                    "query": options.filters.text
                 }
             });
         }
     }
 
-    var links = esClient.searchSync({
+    var results = esClient.searchSync({
         index: 'nodelicious',
         type: 'links',
         body: query
-    }).hits.hits;
+    });
 
     //Add the id to the user element
-    links = _(_(links).map(function(hit){
+    var links = _(_(results.hits.hits).map(function(hit){
         return me.sanitizeLink(hit._source, hit._id, user, options);
     })).value();
 
-    return links;
+    return {
+        links: links,
+        total: results.hits.total
+    };
 };
 
 linkService.prototype.getLinkByUUID = function(uuid, user, options){
@@ -125,6 +128,60 @@ linkService.prototype.getLinkByUUID = function(uuid, user, options){
     })).first();
 
     return link;
+};
+
+linkService.prototype.getLinksTotal = function(user){
+    var me = this,
+        esClient = global.esClient,
+        getPrivate = (user) ? true : false;
+
+    var query = {
+        "query": {
+            "bool": {
+                "should": [
+                    {
+                        "term": {
+                            "public": {
+                                "value": true
+                            }
+                        }
+                    }
+                ],
+                "must": []
+            }
+        }
+    };
+
+    if(getPrivate){
+        query.query.bool.should.push({
+            "bool": {
+                "must": [
+                    {
+                        "term": {
+                            "public": {
+                                "value": false
+                            }
+                        }
+                    },
+                    {
+                        "term": {
+                            "creator_id": {
+                                "value": user.id
+                            }
+                        }
+                    }
+                ]
+            }
+        });
+    }
+
+    var totalLinks = esClient.countSync({
+        index: 'nodelicious',
+        type: 'links',
+        body: query
+    }).count;
+
+    return totalLinks;
 };
 
 linkService.prototype.createLink = function(user, link){
