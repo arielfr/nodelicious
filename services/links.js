@@ -240,9 +240,12 @@ linkService.prototype.getTagsCount = function(user){
 
     if(!_.isEmpty(buckets)){
         _.forEach(buckets, function(bucket){
+            var font = 14 + (bucket.doc_count * 0.3);
+
             tagCloud.push({
                 key: bucket.key,
-                count: bucket.doc_count
+                count: bucket.doc_count,
+                font: ((font > 70) ? 70 : font) + 'px'
             });
         });
     }

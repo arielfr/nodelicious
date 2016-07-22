@@ -1,0 +1,25 @@
+{{#extend "main"}}
+    {{#content "header" mode="append"}}
+        <link rel="stylesheet" href="/css/tagcloud.css">
+    {{/content}}
+    {{#content "body"}}
+        {{#extend "modules/navbar"}}{{/extend}}
+        {{#extend "modules/fixed-link"}}{{/extend}}
+
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    {{#each cloud}}
+                        <span>{{this.count}}</span>
+                        <a href="/?tag={{this.key}}" style="font-size: {{this.font}};">{{this.key}}</a>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+    {{/content}}
+
+    {{#content "scripts" mode="append"}}
+        <script type="application/javascript" src="/js/tagcloud.js"></script>
+    {{/content}}
+{{/extend}}
