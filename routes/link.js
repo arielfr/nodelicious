@@ -171,8 +171,8 @@ link.post('/link/save', authFilter.loggedIn, function(req, res, next){
         title = req.body.title,
         description = req.body.description,
         tags = req.body.tags,
-        isPublic = (req.body.public) ? true : false,
-        isSnippet = (req.body.snippet) ? true : false,
+        isPublic = (req.body.public == 'true') ? true : false,
+        isSnippet = (req.body.snippet == 'true') ? true : false,
         uuid = req.body.uuid,
         action = (req.body.action) ? req.body.action : 'new',
         error = false,
@@ -191,7 +191,7 @@ link.post('/link/save', authFilter.loggedIn, function(req, res, next){
     if(error){
         req.flash('body', req.body);
 
-        if(action == 'edit'){
+        if(req.body.uuid){
             return res.redirect('/link/' + action + '?uuid=' + req.body.uuid);
         }
         return res.redirect('/link/' + action);

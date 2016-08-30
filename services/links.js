@@ -34,7 +34,8 @@ linkService.prototype.getLinks = function(user, from, size, options){
         ],
         "query": {
             "bool": {
-                "should": [
+                "should": [],
+                "must": [
                     {
                         "term": {
                             "public": {
@@ -42,13 +43,14 @@ linkService.prototype.getLinks = function(user, from, size, options){
                             }
                         }
                     }
-                ],
-                "must": []
+                ]
             }
         }
     };
 
     if(getPrivate){
+        query.query.bool.must = [];
+
         query.query.bool.should.push({
             "bool": {
                 "must": [
@@ -83,12 +85,14 @@ linkService.prototype.getLinks = function(user, from, size, options){
         if(options.filters.text){
             query.query.bool.must.push({
                 "query_string": {
-                    "fields": ["link", "description", "tags"],
+                    "fields": ["title", "link", "description", "tags"],
                     "query": options.filters.text
                 }
             });
         }
     }
+
+    console.log(JSON.stringify(query))
 
     var results = esClient.searchSync({
         index: 'nodelicious',

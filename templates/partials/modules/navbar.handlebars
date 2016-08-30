@@ -7,6 +7,11 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
+
+            <a href="#" class="collapsed-button search">
+                <i class="material-icons">search</i>
+            </a>
+
             <a class="navbar-brand" href="/">{{navbar.title}}</a>
         </div>
 
@@ -15,11 +20,9 @@
                 <li>
                     <a href="/tagcloud">TAG CLOUD</a>
                 </li>
-                {{#if isLogged}}
-                    <li>
-                        <a href="#">SEARCH</a>
-                    </li>
-                {{/if}}
+                <li>
+                    <a href="#" class="search">SEARCH</a>
+                </li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">

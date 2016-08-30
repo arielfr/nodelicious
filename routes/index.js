@@ -5,6 +5,17 @@ var express = require('express'),
     linkService = require('../services/links'),
     utilService = require('../services/util');
 
+index.post('/search', function(req, res, next){
+    var text = req.body.text;
+
+    if(!text){
+        res.redirect('/');
+        return;
+    }
+
+    res.redirect(301, '/?text=' + utilService.toPathVariable(text));
+});
+
 index.get('/', function(req, res, next){
     var model = {},
         tagFilter = (req.query.tag) ? (Array.isArray(req.query.tag)) ? req.query.tag.map(function(text){
