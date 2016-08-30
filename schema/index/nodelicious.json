@@ -14,12 +14,12 @@
             "max_shingle_size": "3"
           },
           "spanish_stop": {
-            "type":       "stop",
-            "stopwords":  "_spanish_"
+            "type": "stop",
+            "stopwords": "_spanish_"
           },
           "spanish_stemmer": {
-            "type":       "stemmer",
-            "language":   "light_spanish"
+            "type": "stemmer",
+            "language": "light_spanish"
           }
         },
         "analyzer": {
@@ -29,7 +29,8 @@
               "lowercase",
               "spanish_stop",
               "spanish_stemmer",
-              "custom_shingle"
+              "custom_shingle",
+              "asciifolding"
             ]
           }
         }

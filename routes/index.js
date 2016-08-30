@@ -23,6 +23,9 @@ index.get('/', function(req, res, next){
         }) : [utilService.fixSpaces(req.query.tag)] : req.query.tag,
         textFilter = (req.query.text) ? utilService.fixSpaces(req.query.text) : req.query.text;
 
+    //Replace invalid characters
+    textFilter = textFilter.replace(/[^a-zA-Z0-9\s\.\ñáéíóúÁÉÍÓÚ]*/g, '');
+
     var filters = {
         tags: tagFilter,
         text: textFilter
