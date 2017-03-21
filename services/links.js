@@ -8,6 +8,14 @@ const {ObjectID} = require('mongodb');
 
 let linkService = {};
 
+/**
+ * Get links depending on options
+ * @param user
+ * @param from
+ * @param size
+ * @param options
+ * @returns {Promise}
+ */
 linkService.getLinks = function (user, from, size, options) {
   return new Promise((resolve, reject) => {
     options = _.merge({}, {
@@ -75,112 +83,15 @@ linkService.getLinks = function (user, from, size, options) {
       reject(err);
     });
   });
-
-  /*
-  let options = _.merge({}, {
-    id: false,
-    markdown: true,
-    filters: {}
-  }, options);
-
-  const me = this;
-  const esClient = global.esClient;
-  from = (from) ? from : 0;
-  size = (size) ? size : 25;
-  const getPrivate = (user) ? true : false;
-
-  let query = {};
-
-  query = {
-    "from": from,
-    "size": size,
-    "sort": [
-      {
-        "created_date": {
-          "order": "desc"
-        }
-      }
-    ],
-    "query": {
-      "bool": {
-        "should": [],
-        "must": [
-          {
-            "term": {
-              "public": {
-                "value": true
-              }
-            }
-          }
-        ]
-      }
-    }
-  };
-
-  if (getPrivate) {
-    query.query.bool.must = [];
-
-    query.query.bool.should.push({
-      "bool": {
-        "must": [
-          {
-            "term": {
-              "public": {
-                "value": false
-              }
-            }
-          },
-          {
-            "term": {
-              "creator_id": {
-                "value": user.id
-              }
-            }
-          }
-        ]
-      }
-    });
-  }
-
-  //Adding filters
-  if (!_.isEmpty(options.filters)) {
-    if (options.filters.tags) {
-      query.query.bool.must.push({
-        "terms": {
-          "tags": options.filters.tags
-        }
-      });
-    }
-    if (options.filters.text) {
-      query.query.bool.must.push({
-        "query_string": {
-          "fields": ["title", "link", "description", "tags"],
-          "query": options.filters.text
-        }
-      });
-    }
-  }
-
-  console.log(JSON.stringify(query));
-
-  const results = esClient.searchSync({
-    index: 'nodelicious',
-    type: 'links',
-    body: query
-  });
-
-  //Add the id to the user element
-  const links = _(_(results.hits.hits).map(function (hit) {
-    return me.sanitizeLink(hit._source, hit._id, user, options);
-  })).value();
-
-  return {
-    links: links,
-    total: results.hits.total
-  };
-   */
 };
 
+/**
+ * Get link by uuid
+ * @param uuid
+ * @param user
+ * @param options
+ * @returns {Promise}
+ */
 linkService.getLinkByUUID = function (uuid, user, options) {
   return new Promise((resolve, reject) => {
     options = _.merge({}, {
@@ -195,11 +106,11 @@ linkService.getLinkByUUID = function (uuid, user, options) {
       }).limit(1).toArray().then(links => {
         let linkToUpdate;
 
-        if(links !== null){
+        if (links !== null) {
           linkToUpdate = links[0];
 
           this.sanitizeLink(linkToUpdate, linkToUpdate._id, user, options);
-        }else{
+        } else {
           linkToUpdate = {};
         }
 
@@ -211,6 +122,11 @@ linkService.getLinkByUUID = function (uuid, user, options) {
   });
 };
 
+/**
+ * Get total links on collection
+ * @param user
+ * @returns {Promise}
+ */
 linkService.getLinksTotal = function (user) {
   return new Promise((resolve, reject) => {
     mongo.connect().then(db => {
@@ -242,62 +158,14 @@ linkService.getLinksTotal = function (user) {
       reject(err);
     });
   });
-
-  /*
-  const me = this;
-  const esClient = global.esClient;
-  const getPrivate = (user) ? true : false;
-
-  var query = {
-    "query": {
-      "bool": {
-        "should": [
-          {
-            "term": {
-              "public": {
-                "value": true
-              }
-            }
-          }
-        ],
-        "must": []
-      }
-    }
-  };
-
-  if (getPrivate) {
-    query.query.bool.should.push({
-      "bool": {
-        "must": [
-          {
-            "term": {
-              "public": {
-                "value": false
-              }
-            }
-          },
-          {
-            "term": {
-              "creator_id": {
-                "value": user.id
-              }
-            }
-          }
-        ]
-      }
-    });
-  }
-
-  const totalLinks = esClient.countSync({
-    index: 'nodelicious',
-    type: 'links',
-    body: query
-  }).count;
-
-  return totalLinks;
-   */
 };
 
+/**
+ * Create Link
+ * @param user
+ * @param link
+ * @returns {Promise}
+ */
 linkService.createLink = function (user, link) {
   return new Promise((resolve, reject) => {
     mongo.connect().then(db => {
@@ -317,6 +185,12 @@ linkService.createLink = function (user, link) {
   });
 };
 
+/**
+ * Update link
+ * @param user
+ * @param link
+ * @returns {Promise}
+ */
 linkService.updateLink = function (user, link) {
   return new Promise((resolve, reject) => {
     mongo.connect().then(db => {
@@ -328,9 +202,11 @@ linkService.updateLink = function (user, link) {
         }
 
         linksCollection.updateOne({
-          _id: new ObjectID(existingLink._id),
-          link
-        }).then(response => {
+            _id: new ObjectID(existingLink._id),
+          },
+          {
+            $set: link
+          }).then(response => {
           resolve(link);
           db.close();
         });
@@ -341,6 +217,12 @@ linkService.updateLink = function (user, link) {
   });
 };
 
+/**
+ * Delete Link
+ * @param user
+ * @param uuid
+ * @returns {Promise}
+ */
 linkService.deleteLinkByUUID = function (user, uuid) {
   return new Promise((resolve, reject) => {
     mongo.connect().then(db => {

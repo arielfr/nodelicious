@@ -90,26 +90,28 @@ link.get('/link/view', function (req, res, next) {
   let model = {};
   const user = req.user;
   const uuid = req.query.uuid;
-  const link = linkService.getLinkByUUID(uuid, user, {});
 
-  if (!link.public) {
-    if (!user) {
-      req.flash('error', 'This link is private');
+
+  linkService.getLinkByUUID(uuid, user, {}).then(link => {
+    if (!link.public) {
+      if (!user) {
+        req.flash('error', 'This link is private');
+        return res.redirect('/');
+      }
+      if (user && (user.id != link.creator_id)) {
+        req.flash('error', 'You are not the owner of that link');
+        return res.redirect('/');
+      }
+    }
+
+    if (_.isEmpty(link)) {
       return res.redirect('/');
     }
-    if (user && (user.id != link.creator_id)) {
-      req.flash('error', 'You are not the owner of that link');
-      return res.redirect('/');
-    }
-  }
 
-  if (_.isEmpty(link)) {
-    return res.redirect('/');
-  }
+    model.link = link;
 
-  model.link = link;
-
-  res.customRender('link/view', model);
+    res.customRender('link/view', model);
+  });
 });
 
 /**
@@ -219,13 +221,17 @@ link.post('/link/save', authFilter.loggedIn, function (req, res, next) {
     linkToSave.tags = tagSanitazed.split(',');
   }
 
+  let promiseAction;
+
   if (action == 'new') {
-    link = linkService.createLink(req.user, linkToSave);
+    promiseAction = linkService.createLink(req.user, linkToSave);
   } else {
-    link = linkService.updateLink(req.user, linkToSave);
+    promiseAction = linkService.updateLink(req.user, linkToSave);
   }
 
-  return res.redirect('/link/view?uuid=' + link.uuid);
+  promiseAction.then(link => {
+    res.redirect('/link/view?uuid=' + link.uuid);
+  });
 });
 
 module.exports = link;
