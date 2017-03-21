@@ -180,8 +180,6 @@ linkService.createLink = function (user, link) {
       link.created_date = moment().toDate();
       link.creator_id = user._id;
 
-      console.log(link)
-
       linksCollection.insertOne(link).then(response => {
         resolve(link);
 
