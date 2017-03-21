@@ -19,7 +19,7 @@ mongo.connect().then(db => {
 
       db.createCollection('users', {
         validator: {
-          $and: [
+          $or: [
             {
               uuid: {
                 $type: 'string'
@@ -60,7 +60,7 @@ mongo.connect().then(db => {
 
       db.createCollection('links', {
           validator: {
-            $and: [
+            $or: [
               {
                 uuid: {
                   $type: 'string'

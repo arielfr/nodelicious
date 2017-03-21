@@ -40,7 +40,7 @@ linkService.getLinks = function (user, from, size, options) {
 
         query['$and'] = [
           {
-            creator_id: user.id
+            creator_id: user._id
           }
         ];
       }
@@ -148,7 +148,7 @@ linkService.getLinksTotal = function (user) {
 
         query['$and'] = [
           {
-            creator_id: user.id
+            creator_id: user._id
           }
         ];
       }
@@ -178,7 +178,9 @@ linkService.createLink = function (user, link) {
       const linksCollection = db.collection('links');
 
       link.created_date = moment().toDate();
-      link.creator_id = user.id;
+      link.creator_id = user._id;
+
+      console.log(link)
 
       linksCollection.insertOne(link).then(response => {
         resolve(link);
@@ -203,7 +205,7 @@ linkService.updateLink = function (user, link) {
       const linksCollection = db.collection('links');
 
       this.getLinkByUUID(link.uuid, user, {}).then(existingLink => {
-        if (user.id != existingLink.creator_id) {
+        if (user._id != existingLink.creator_id) {
           throw new Error('Permission error');
         }
 
@@ -236,7 +238,7 @@ linkService.deleteLinkByUUID = function (user, uuid) {
       const linksCollection = db.collection('links');
 
       this.getLinkByUUID(uuid, user, {}).then(existingLink => {
-        if (user.id != existingLink.creator_id) {
+        if (user._id != existingLink.creator_id) {
           throw new Error('Permission errors');
         }
 
@@ -272,7 +274,7 @@ linkService.getTagsCount = function (user) {
         delete query['$match'];
 
         query['$match'] = {
-          creator_id: user.id
+          creator_id: user._id
         }
       }
 
@@ -323,7 +325,7 @@ linkService.sanitizeLink = function (link, id, user, options) {
     link.description = showdownConverter.makeHtml(link.description);
   }
 
-  link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
+  link.isOwner = (user) ? ((user._id == link.creator_id) ? true : false) : false;
 
   return link;
 };

@@ -98,7 +98,7 @@ link.get('/link/view', function (req, res, next) {
         req.flash('error', 'This link is private');
         return res.redirect('/');
       }
-      if (user && (user.id != link.creator_id)) {
+      if (user && (user._id != link.creator_id)) {
         req.flash('error', 'You are not the owner of that link');
         return res.redirect('/');
       }
@@ -129,7 +129,7 @@ link.get('/link/edit', authFilter.loggedIn, function (req, res, next) {
       return res.redirect('/');
     }
 
-    if (user.id != link.creator_id) {
+    if (user._id != link.creator_id) {
       req.flash('error', 'You are not the owner of that link');
       return res.redirect('/');
     }
@@ -159,7 +159,7 @@ link.get('/link/delete', function (req, res, next) {
     return res.redirect('/');
   }
 
-  if (user.id != link.creator_id) {
+  if (user._id != link.creator_id) {
     req.flash('error', 'You are not the owner of that link');
     return res.redirect('/');
   }
