@@ -247,95 +247,62 @@ linkService.deleteLinkByUUID = function (user, uuid) {
 };
 
 linkService.getTagsCount = function (user) {
-  const esClient = global.esClient;
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      let query = {};
 
-  let query = {
-    "size": 0,
-    "aggs": {
-      "tags": {
-        "terms": {
-          "field": "tags",
-          "size": 1000
+      const linksCollection = db.collection('links');
+
+      const getPrivate = !!(user);
+
+      query['$match'] = {
+        public: true
+      };
+
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query['$match'];
+
+        query['$match'] = {
+          creator_id: user.id
         }
       }
-    }
-  };
 
-  if (user) {
-    query.query = {
-      "bool": {
-        "should": [
-          {
-            "term": {
-              "public": {
-                "value": false
-              }
-            }
-          },
-          {
-            "bool": {
-              "must": [
-                {
-                  "term": {
-                    "public": {
-                      "value": true
-                    }
-                  }
-                },
-                {
-                  "term": {
-                    "creator_id": {
-                      "value": user.id
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  } else {
-    query.query = {
-      bool: {
-        must: [
-          {
-            term: {
-              public: {
-                value: true
-              }
-            }
-          }
-        ]
-      }
-    }
-  }
+      linksCollection.aggregate([
+        query,
+        {$unwind: "$tags"},
+        {$group: {_id: {_id: "$tags", tag: "$tags"}, count: {$sum: 1}}},
+        {$match: {count: {$gte: 1}}},
+        {$project: {_id: 0, id: "$_id.tag", count: 1}}
+      ]).toArray().then(results => {
+        const tags = (results !== null) ? results : [];
 
-  const tags = esClient.searchSync({
-    index: 'nodelicious',
-    type: 'links',
-    body: query
-  });
+        const tagCloud = tags.map(tag => {
+          const font = 14 + (tag.count * 0.3);
 
-  const buckets = tags.aggregations.tags.buckets;
+          return {
+            key: tag.id,
+            count: tag.count,
+            font: ((font > 70) ? 70 : font) + 'px'
+          };
+        });
 
-  const tagCloud = [];
-
-  if (!_.isEmpty(buckets)) {
-    _.forEach(buckets, function (bucket) {
-      const font = 14 + (bucket.doc_count * 0.3);
-
-      tagCloud.push({
-        key: bucket.key,
-        count: bucket.doc_count,
-        font: ((font > 70) ? 70 : font) + 'px'
+        resolve(tagCloud);
       });
+    }).catch(err => {
+      reject(err);
     });
-  }
-
-  return tagCloud;
+  });
 };
 
+/**
+ * Sanitize links
+ * @param link
+ * @param id
+ * @param user
+ * @param options
+ * @returns {*}
+ */
 linkService.sanitizeLink = function (link, id, user, options) {
   if (_.isEmpty(link.tags)) {
     delete link.tags;

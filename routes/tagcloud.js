@@ -5,12 +5,13 @@ const moment = require('moment');
 const linkService = require('../services/links');
 
 index.get('/tagcloud', function (req, res, next) {
-  let model = {
-    cloud: linkService.getTagsCount(req.user)
-  };
+  linkService.getTagsCount(req.user).then(cloud => {
+    const model = {
+      cloud: cloud
+    };
 
-
-  res.renderSync('tagcloud', model);
+    res.customRender('tagcloud', model);
+  });
 });
 
 module.exports = index;
