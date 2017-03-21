@@ -1,15 +1,83 @@
-const bodyBuilder = require('bodybuilder');
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
 const moment = require('moment');
 const uuid = require('node-uuid');
-const sync = require('synchronize');
 const showdownConverter = require('../initializers/showdown');
+const mongo = require('../initializers/mongo');
+const {ObjectID} = require('mongodb');
 
 let linkService = {};
 
 linkService.getLinks = function (user, from, size, options) {
-  options = _.merge({}, {
+  return new Promise((resolve, reject) => {
+    options = _.merge({}, {
+      markdown: true,
+      filters: {}
+    }, options);
+
+    mongo.connect().then(db => {
+      let query = {};
+
+      const linksCollection = db.collection('links');
+
+      const getPrivate = !!(user);
+      const fromSize = (from) ? from : 0;
+      const toSize = (size) ? size : 25;
+
+      query.public = true;
+
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query.public;
+
+        query['$and'] = [
+          {
+            creator_id: user.id
+          }
+        ];
+      }
+
+      //Adding filters
+      if (!_.isEmpty(options.filters)) {
+        if (options.filters.tags) {
+          query['$and'].push({
+            tags: {
+              $in: options.filters.tags
+            }
+          });
+        }
+
+        if (options.filters.text) {
+          query['$and'].push({
+            $text: {
+              $search: options.filters.text
+            }
+          });
+        }
+      }
+
+      linksCollection.find(query).sort({
+        created_date: -1
+      }).skip(fromSize).limit(toSize).toArray().then(links => {
+        links = (links !== null) ? links : [];
+
+        //Add the id to the user element
+        links = links.map((link) => {
+          return this.sanitizeLink(link, link._id, user, options);
+        });
+
+        resolve({
+          links: links,
+          total: links.length
+        })
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
+
+  /*
+  let options = _.merge({}, {
     id: false,
     markdown: true,
     filters: {}
@@ -110,32 +178,72 @@ linkService.getLinks = function (user, from, size, options) {
     links: links,
     total: results.hits.total
   };
+   */
 };
 
 linkService.getLinkByUUID = function (uuid, user, options) {
-  const me = this;
-  const esClient = global.esClient;
+  return new Promise((resolve, reject) => {
+    options = _.merge({}, {
+      markdown: true
+    }, options);
 
-  options = _.merge({}, {
-    id: false,
-    markdown: true
-  }, options);
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-  let link = esClient.searchSync({
-    index: 'nodelicious',
-    type: 'links',
-    body: new bodyBuilder().filter('term', 'uuid', uuid).build()
-  }).hits.hits;
+      linksCollection.find({
+        uuid: uuid
+      }).limit(1).toArray().then(links => {
+        let linkToUpdate;
 
-  //Add the id to the user element
-  link = _(_(link).map(function (hit) {
-    return me.sanitizeLink(hit._source, hit._id, user, options);
-  })).first();
+        if(links !== null){
+          linkToUpdate = links[0];
 
-  return link;
+          this.sanitizeLink(linkToUpdate, linkToUpdate._id, user, options);
+        }else{
+          linkToUpdate = {};
+        }
+
+        resolve(linkToUpdate);
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
 };
 
 linkService.getLinksTotal = function (user) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      let query = {};
+
+      const linksCollection = db.collection('links');
+
+      const getPrivate = !!(user);
+
+      query.public = true;
+
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query.public;
+
+        query['$and'] = [
+          {
+            creator_id: user.id
+          }
+        ];
+      }
+
+      linksCollection.find(query).count().then(count => {
+        const total = (count !== null) ? count : 0;
+
+        resolve(total);
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
+
+  /*
   const me = this;
   const esClient = global.esClient;
   const getPrivate = (user) ? true : false;
@@ -187,61 +295,73 @@ linkService.getLinksTotal = function (user) {
   }).count;
 
   return totalLinks;
+   */
 };
 
 linkService.createLink = function (user, link) {
-  const esClient = global.esClient;
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-  link.created_date = moment().toDate();
-  link.creator_id = user.id;
+      link.created_date = moment().toDate();
+      link.creator_id = user.id;
 
-  esClient.indexSync({
-    index: 'nodelicious',
-    type: 'links',
-    body: link
+      linksCollection.insertOne(link).then(response => {
+        resolve(link);
+
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
+    });
   });
-
-  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-
-  return link;
 };
 
 linkService.updateLink = function (user, link) {
-  const me = this;
-  const esClient = global.esClient;
-  const fromEs = me.getLinkByUUID(link.uuid, user, {id: true});
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-  link.creator_id = fromEs.creator_id;
+      this.getLinkByUUID(link.uuid, user, {}).then(existingLink => {
+        if (user.id != existingLink.creator_id) {
+          throw new Error('Permission error');
+        }
 
-  if (user.id != link.creator_id) {
-    throw new Error('Permission errors');
-  }
-
-  esClient.updateSync({
-    index: 'nodelicious',
-    type: 'links',
-    id: fromEs.id,
-    body: {
-      doc: link
-    }
+        linksCollection.updateOne({
+          _id: new ObjectID(existingLink._id),
+          link
+        }).then(response => {
+          resolve(link);
+          db.close();
+        });
+      });
+    }).catch(err => {
+      reject(err);
+    });
   });
-
-  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-
-  return link;
 };
 
 linkService.deleteLinkByUUID = function (user, uuid) {
-  const esClient = global.esClient;
-  const link = this.getLinkByUUID(uuid, user, {id: true});
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-  esClient.deleteSync({
-    index: 'nodelicious',
-    type: 'links',
-    id: link.id
+      this.getLinkByUUID(uuid, user, {}).then(existingLink => {
+        if (user.id != existingLink.creator_id) {
+          throw new Error('Permission errors');
+        }
+
+        linksCollection.deleteOne({
+          _id: new ObjectID(existingLink._id)
+        }).then(response => {
+          resolve(true);
+          db.close();
+        });
+      });
+    }).catch(err => {
+      reject(err);
+    });
   });
-
-  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
 };
 
 linkService.getTagsCount = function (user) {
@@ -345,10 +465,6 @@ linkService.sanitizeLink = function (link, id, user, options) {
   }
 
   link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
-
-  if (options.id) {
-    link.id = id;
-  }
 
   return link;
 };

@@ -32,15 +32,15 @@ index.get('/', function (req, res, next) {
     text: textFilter
   };
 
-  model.results = linkService.getLinks(req.user, 0, 100, {
+  Promise.all([linkService.getLinks(req.user, 0, 100, {
     filters: filters
+  }), linkService.getLinksTotal(req.user)]).then(([results, total]) => {
+    model.results = results;
+    model.filters = filters;
+    model.total = total;
+
+    res.customRender('index', model);
   });
-
-  model.filters = filters;
-
-  model.total = linkService.getLinksTotal(req.user);
-
-  res.renderSync('index', model);
 });
 
 module.exports = index;

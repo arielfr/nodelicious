@@ -6,7 +6,13 @@ const _ = require('lodash');
 const logger = require('../initializers/logger.js');
 
 login.get('/login', authFilter.notLoggedIn, function (req, res, next) {
-  res.renderSync('login', {navbar: {login: true}, error: req.flash('error'), body: _(req.flash('body')).first()});
+  res.customRender('login', {
+    navbar: {
+      login: true
+    },
+    error: req.flash('error'),
+    body: _(req.flash('body')).first()
+  });
 });
 
 /**

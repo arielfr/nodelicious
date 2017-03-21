@@ -42,24 +42,18 @@ module.exports = function (app) {
       passReqToCallback: true
     },
     function (req, email, password, done) {
-      sync.fiber(function () {
-        try {
-          const user = userService.getUserByEmail(email);
-
-          if (_.isEmpty(user)) {
-            throw new Error('The user with email ' + email + ' doesnt exists');
-          }
-
-          if (!bcrypt.compareSync(password, user.password)) {
-            throw new Error('The password is not valid');
-          }
-
-          logger.debug('El usuario %s ha ingresado exitosamente', user.email);
-
-          return done(null, user);
-        } catch (e) {
-          return done(e, false);
+      userService.getUserByEmail(email).then(user => {
+        if (_.isEmpty(user)) {
+          return done(new Error('The user with email ' + email + ' doesnt exists'), false);
         }
+
+        if (!bcrypt.compareSync(password, user.password)) {
+          return done(new Error('The password is not valid'), false);
+        }
+
+        logger.debug('El usuario %s ha ingresado exitosamente', user.email);
+
+        return done(null, user);
       });
     }
   ));

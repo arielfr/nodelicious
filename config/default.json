@@ -9,9 +9,10 @@
   "handlebars": {
     "cache": false
   },
-  "elasticsearch": {
-    "host": "localhost:9200",
-    "delay": 500
+  "mongo": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "nodelicious"
   },
   "redis": {
     "host": "localhost",
@@ -22,10 +23,5 @@
     "navbar": {
       "title": "Nodelicious"
     }
-  },
-  "mongo": {
-    "host": "localhost",
-    "port": 27017,
-    "database": "nodelicious"
   }
 }

@@ -20,8 +20,6 @@ require('./middleware/bodyparser.js')(app);
 require('./middleware/cookieparser.js')(app);
 require('./middleware/flash-messages.js')(app);
 require('./middleware/security.js')(app);
-//This middleware will be the FIRST from the ones who needs to use SYNC
-require('./middleware/synchronize')(app);
 require('./middleware/localization.js')(app);
 require('./middleware/custom-renderer.js')(app);
 

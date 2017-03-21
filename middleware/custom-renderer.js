@@ -1,7 +1,6 @@
 const sync = require('synchronize');
-const defer = sync.defer;
-const await = sync.await;
 const config = require('config');
+const _ = require('lodash');
 
 module.exports = function (app) {
   const defaultModel = {
@@ -11,23 +10,22 @@ module.exports = function (app) {
     }
   };
 
-  //This will append defualt configuration to all models
-  function loadDefaultModel(model) {
-    model = Object.assign({}, defaultModel, model);
-
-    return model;
-  }
-
   app.use(function (req, res, next) {
-    res.renderSync = function (view, model) {
-      model.isLogged = (req.user) ? true : false;
-      model.user = req.user;
+    res.customRender = function (view, model) {
+      return new Promise((resolve, reject) => {
+        model.isLogged = (req.user) ? true : false;
+        model.user = req.user;
 
-      model = loadDefaultModel(model);
+        model = _.merge({}, defaultModel, model);
 
-      const pageRender = await(res.render(view, model, defer()));
+        res.render(view, model, (err, response) => {
+          if(err) reject(err);
 
-      res.send(pageRender);
+          resolve(response);
+
+          res.send(response);
+        });
+      });
     };
 
     next();

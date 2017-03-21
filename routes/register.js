@@ -8,7 +8,7 @@ const userService = require('../services/users');
 const logger = require('../initializers/logger.js');
 
 register.get('/register', authFilter.notLoggedIn, function (req, res, next) {
-  res.renderSync('register', {navbar: {register: true}, error: req.flash('error'), body: _(req.flash('body')).first()});
+  res.customRender('register', {navbar: {register: true}, error: req.flash('error'), body: _(req.flash('body')).first()});
 });
 
 register.post('/register/local', function (req, res, next) {
@@ -18,17 +18,17 @@ register.post('/register/local', function (req, res, next) {
     return res.redirect('/register');
   }
 
-  const user = userService.registerUser({
+  userService.registerUser({
     firstname: req.body.firstname,
     lastname: req.body.lastname,
     email: req.body.email,
     password: req.body.password
-  });
+  }).then(user => {
+    req.logIn(user, null, function () {
+      logger.debug('El usuario %s se ha registrado exitosamente', user.email);
 
-  req.logIn(user, null, function () {
-    logger.debug('El usuario %s se ha registrado exitosamente', user.email);
-
-    res.redirect('/');
+      res.redirect('/');
+    });
   });
 });
 

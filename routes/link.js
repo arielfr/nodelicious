@@ -19,7 +19,7 @@ link.get('/link/add', authFilter.loggedIn, function (req, res, next) {
     error: req.flash('error')
   };
 
-  res.renderSync('link/add', model);
+  res.customRender('link/add', model);
 });
 
 /**
@@ -80,7 +80,7 @@ link.get('/link/new', authFilter.loggedIn, function (req, res, next) {
   model.body = fromForm;
   model.error = req.flash('error');
 
-  res.renderSync('link/editor', model);
+  res.customRender('link/editor', model);
 });
 
 /**
@@ -109,7 +109,7 @@ link.get('/link/view', function (req, res, next) {
 
   model.link = link;
 
-  res.renderSync('link/view', model);
+  res.customRender('link/view', model);
 });
 
 /**
@@ -121,27 +121,28 @@ link.get('/link/edit', authFilter.loggedIn, function (req, res, next) {
   const uuid = req.query.uuid;
   const body = _(req.flash('body')).first();
   let fromForm = Object.assign({}, body);
-  const link = linkService.getLinkByUUID(uuid, user, {markdown: false});
 
-  if (_.isEmpty(link)) {
-    return res.redirect('/');
-  }
+  linkService.getLinkByUUID(uuid, user, {markdown: false}).then(link => {
+    if (_.isEmpty(link)) {
+      return res.redirect('/');
+    }
 
-  if (user.id != link.creator_id) {
-    req.flash('error', 'You are not the owner of that link');
-    return res.redirect('/');
-  }
+    if (user.id != link.creator_id) {
+      req.flash('error', 'You are not the owner of that link');
+      return res.redirect('/');
+    }
 
-  if (_.isEmpty(fromForm)) {
-    fromForm = _.merge(fromForm, link);
-  }
+    if (_.isEmpty(fromForm)) {
+      fromForm = _.merge(fromForm, link);
+    }
 
-  model.action = 'edit';
-  model.error = req.flash('error');
-  model.body = fromForm;
-  model.body.uuid = uuid;
+    model.action = 'edit';
+    model.error = req.flash('error');
+    model.body = fromForm;
+    model.body.uuid = uuid;
 
-  res.renderSync('link/editor', model);
+    res.customRender('link/editor', model);
+  });
 });
 
 /**
@@ -172,8 +173,8 @@ link.post('/link/save', authFilter.loggedIn, function (req, res, next) {
   const title = req.body.title;
   const description = req.body.description;
   const tags = req.body.tags;
-  const isPublic = (req.body.public == 'true') ? true : false;
-  const isSnippet = (req.body.snippet == 'true') ? true : false;
+  const isPublic = (req.body.public === 'on') ? true : false;
+  const isSnippet = (req.body.snippet === 'true') ? true : false;
   const uuid = req.body.uuid;
   const action = (req.body.action) ? req.body.action : 'new';
   let error = false;
