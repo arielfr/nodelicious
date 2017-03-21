@@ -1,38 +1,33 @@
-var sync = require('synchronize'),
-    _ = require('lodash'),
-    defer = sync.defer,
-    await = sync.await;
+const sync = require('synchronize');
+const config = require('config');
+const _ = require('lodash');
 
-module.exports = function(app){
-    var defaultModel = {
-        title: global.config.get('page.title'),
-        navbar: {
-            title: global.config.get('page.navbar.title')
-        }
-    };
+module.exports = function (app) {
+  const defaultModel = {
+    title: config.get('page.title'),
+    navbar: {
+      title: config.get('page.navbar.title')
+    }
+  };
 
-    //This will append defualt configuration to all models
-    function loadDefaultModel(model){
-        //Override the default keys with the ones on the model
-        //_.merge({}, { a: 'a'  }, { a: undefined }) // => { a: "a" }
-        //_.merge({}, { a: 'a'  }, { a: bb }) // => { a: "bb" }
+  app.use(function (req, res, next) {
+    res.customRender = function (view, model) {
+      return new Promise((resolve, reject) => {
+        model.isLogged = (req.user) ? true : false;
+        model.user = req.user;
+
         model = _.merge({}, defaultModel, model);
 
-        return model;
-    }
+        res.render(view, model, (err, response) => {
+          if(err) reject(err);
 
-    app.use(function(req, res, next){
-        res.renderSync = function(view, model){
-            model.isLogged = (req.user) ? true : false;
-            model.user = req.user;
+          resolve(response);
 
-            model = loadDefaultModel(model);
+          res.send(response);
+        });
+      });
+    };
 
-            var pageRender = await(res.render(view, model, defer()));
-
-            res.send(pageRender);
-        };
-
-        next();
-    });
+    next();
+  });
 };

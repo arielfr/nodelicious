@@ -1,23 +1,22 @@
-var errors = require('errors');
+const errors = require('errors');
+const logger = require('../initializers/logger.js');
 
-module.exports = function(app){
-    app.use(errorHandler);
-};
+module.exports = function (app) {
+  app.use((err, req, res, next) => {
+    let error;
 
-function errorHandler(err, req, res, next){
-    var error;
+    logger.debug(err);
 
-    global.log.debug(err);
-
-    if( err instanceof Error && err.name == 'Error' ){
-        error = new errors.Http500Error(err.toString());
-    }else{
-        error = err;
+    if (err instanceof Error && err.name == 'Error') {
+      error = new errors.Http500Error(err.toString());
+    } else {
+      error = err;
     }
 
-    if( error.code == 404 ){
-        res.render('404');
-    }else{
-        res.render('500');
+    if (error.code == 404) {
+      res.render('404');
+    } else {
+      res.render('500');
     }
+  });
 };

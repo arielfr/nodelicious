@@ -1,356 +1,331 @@
-var bodyBuilder = require('bodybuilder'),
-    bcrypt = require('bcrypt'),
-    _ = require('lodash'),
-    moment = require('moment'),
-    uuid = require('node-uuid'),
-    sync = require('synchronize');
+const bcrypt = require('bcrypt');
+const _ = require('lodash');
+const moment = require('moment');
+const uuid = require('node-uuid');
+const showdownConverter = require('../initializers/showdown');
+const mongo = require('../initializers/mongo');
+const {ObjectID} = require('mongodb');
 
-var linkService = function(){};
+let linkService = {};
 
-linkService.prototype.getLinks = function(user, from, size, options){
+/**
+ * Get links depending on options
+ * @param user
+ * @param from
+ * @param size
+ * @param options
+ * @returns {Promise}
+ */
+linkService.getLinks = function (user, from, size, options) {
+  return new Promise((resolve, reject) => {
     options = _.merge({}, {
-        id: false,
-        markdown: true,
-        filters: {}
+      markdown: true,
+      filters: {}
     }, options);
 
-    var me = this,
-        esClient = global.esClient,
-        from = (from) ? from : 0,
-        size = (size) ? size : 25,
-        getPrivate = (user) ? true : false;
+    mongo.connect().then(db => {
+      let query = {};
 
-    var query = {};
+      const linksCollection = db.collection('links');
 
-    query = {
-        "from": from,
-        "size": size,
-        "sort": [
-            {
-                "created_date": {
-                    "order": "desc"
-                }
+      const getPrivate = !!(user);
+      const fromSize = (from) ? from : 0;
+      const toSize = (size) ? size : 25;
+
+      query.public = true;
+
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query.public;
+
+        query['$and'] = [
+          {
+            creator_id: user.id
+          }
+        ];
+      }
+
+      //Adding filters
+      if (!_.isEmpty(options.filters)) {
+        if (options.filters.tags) {
+          query['$and'].push({
+            tags: {
+              $in: options.filters.tags
             }
-        ],
-        "query": {
-            "bool": {
-                "should": [],
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": true
-                            }
-                        }
-                    }
-                ]
-            }
+          });
         }
-    };
 
-    if(getPrivate){
-        query.query.bool.must = [];
-
-        query.query.bool.should.push({
-            "bool": {
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "creator_id": {
-                                "value": user.id
-                            }
-                        }
-                    }
-                ]
+        if (options.filters.text) {
+          query['$and'].push({
+            $text: {
+              $search: options.filters.text
             }
+          });
+        }
+      }
+
+      linksCollection.find(query).sort({
+        created_date: -1
+      }).skip(fromSize).limit(toSize).toArray().then(links => {
+        links = (links !== null) ? links : [];
+
+        //Add the id to the user element
+        links = links.map((link) => {
+          return this.sanitizeLink(link, link._id, user, options);
         });
-    }
 
-    //Adding filters
-    if(!_.isEmpty(options.filters)){
-        if(options.filters.tags){
-            query.query.bool.must.push({
-                "terms": {
-                    "tags": options.filters.tags
-                }
-            });
-        }
-        if(options.filters.text){
-            query.query.bool.must.push({
-                "query_string": {
-                    "fields": ["title", "link", "description", "tags"],
-                    "query": options.filters.text
-                }
-            });
-        }
-    }
+        resolve({
+          links: links,
+          total: links.length
+        });
 
-    console.log(JSON.stringify(query))
-
-    var results = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
     });
-
-    //Add the id to the user element
-    var links = _(_(results.hits.hits).map(function(hit){
-        return me.sanitizeLink(hit._source, hit._id, user, options);
-    })).value();
-
-    return {
-        links: links,
-        total: results.hits.total
-    };
+  });
 };
 
-linkService.prototype.getLinkByUUID = function(uuid, user, options){
-    var me = this,
-        esClient = global.esClient;
-
+/**
+ * Get link by uuid
+ * @param uuid
+ * @param user
+ * @param options
+ * @returns {Promise}
+ */
+linkService.getLinkByUUID = function (uuid, user, options) {
+  return new Promise((resolve, reject) => {
     options = _.merge({}, {
-        id: false,
-        markdown: true
+      markdown: true
     }, options);
 
-    var link = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: new bodyBuilder().filter('term', 'uuid', uuid).build()
-    }).hits.hits;
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-    //Add the id to the user element
-    link = _(_(link).map(function(hit){
-        return me.sanitizeLink(hit._source, hit._id, user, options);
-    })).first();
+      linksCollection.find({
+        uuid: uuid
+      }).limit(1).toArray().then(links => {
+        let linkToUpdate;
 
-    return link;
+        if (links !== null) {
+          linkToUpdate = links[0];
+
+          this.sanitizeLink(linkToUpdate, linkToUpdate._id, user, options);
+        } else {
+          linkToUpdate = {};
+        }
+
+        resolve(linkToUpdate);
+
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
 };
 
-linkService.prototype.getLinksTotal = function(user){
-    var me = this,
-        esClient = global.esClient,
-        getPrivate = (user) ? true : false;
+/**
+ * Get total links on collection
+ * @param user
+ * @returns {Promise}
+ */
+linkService.getLinksTotal = function (user) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      let query = {};
 
-    var query = {
-        "query": {
-            "bool": {
-                "should": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": true
-                            }
-                        }
-                    }
-                ],
-                "must": []
-            }
+      const linksCollection = db.collection('links');
+
+      const getPrivate = !!(user);
+
+      query.public = true;
+
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query.public;
+
+        query['$and'] = [
+          {
+            creator_id: user.id
+          }
+        ];
+      }
+
+      linksCollection.find(query).count().then(count => {
+        const total = (count !== null) ? count : 0;
+
+        resolve(total);
+
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
+};
+
+/**
+ * Create Link
+ * @param user
+ * @param link
+ * @returns {Promise}
+ */
+linkService.createLink = function (user, link) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
+
+      link.created_date = moment().toDate();
+      link.creator_id = user.id;
+
+      linksCollection.insertOne(link).then(response => {
+        resolve(link);
+
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
+};
+
+/**
+ * Update link
+ * @param user
+ * @param link
+ * @returns {Promise}
+ */
+linkService.updateLink = function (user, link) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
+
+      this.getLinkByUUID(link.uuid, user, {}).then(existingLink => {
+        if (user.id != existingLink.creator_id) {
+          throw new Error('Permission error');
         }
-    };
 
-    if(getPrivate){
-        query.query.bool.should.push({
-            "bool": {
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "creator_id": {
-                                "value": user.id
-                            }
-                        }
-                    }
-                ]
-            }
+        linksCollection.updateOne({
+            _id: new ObjectID(existingLink._id),
+          },
+          {
+            $set: link
+          }).then(response => {
+          resolve(link);
+
+          db.close();
         });
-    }
-
-    var totalLinks = esClient.countSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
-    }).count;
-
-    return totalLinks;
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
 };
 
-linkService.prototype.createLink = function(user, link){
-    var esClient = global.esClient;
+/**
+ * Delete Link
+ * @param user
+ * @param uuid
+ * @returns {Promise}
+ */
+linkService.deleteLinkByUUID = function (user, uuid) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      const linksCollection = db.collection('links');
 
-    link.created_date = moment().toDate();
-    link.creator_id = user.id;
-
-    esClient.indexSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: link
-    });
-
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-
-    return link;
-};
-
-linkService.prototype.updateLink = function(user, link){
-    var me = this,
-        esClient = global.esClient,
-        fromEs = me.getLinkByUUID(link.uuid, user, {id: true});
-
-    link.creator_id = fromEs.creator_id;
-
-    if(user.id != link.creator_id){
-        throw new Error('Permission errors');
-    }
-
-    esClient.updateSync({
-        index: 'nodelicious',
-        type: 'links',
-        id: fromEs.id,
-        body: {
-            doc: link
+      this.getLinkByUUID(uuid, user, {}).then(existingLink => {
+        if (user.id != existingLink.creator_id) {
+          throw new Error('Permission errors');
         }
-    });
 
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
+        linksCollection.deleteOne({
+          _id: new ObjectID(existingLink._id)
+        }).then(response => {
+          resolve(true);
 
-    return link;
-};
-
-linkService.prototype.deleteLinkByUUID = function(user, uuid){
-    var esClient = global.esClient;
-
-    var link = this.getLinkByUUID(uuid, user, {id: true});
-
-    esClient.deleteSync({
-        index: 'nodelicious',
-        type: 'links',
-        id: link.id
-    });
-
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-};
-
-linkService.prototype.getTagsCount = function(user){
-    var esClient = global.esClient;
-
-    var query = {
-        "size": 0,
-        "aggs": {
-            "tags": {
-                "terms": {
-                    "field": "tags",
-                    "size": 1000
-                }
-            }
-        }
-    };
-
-    if(user){
-        query.query = {
-            "bool": {
-                "should": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "bool": {
-                            "must": [
-                                {
-                                    "term": {
-                                        "public": {
-                                            "value": true
-                                        }
-                                    }
-                                },
-                                {
-                                    "term": {
-                                        "creator_id": {
-                                            "value": user.id
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        }
-    }else{
-        query.query = {
-            bool: {
-                must: [
-                    {
-                        term: {
-                            public: {
-                                value: true
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    }
-
-    var tags = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
-    });
-
-    var buckets = tags.aggregations.tags.buckets;
-
-    var tagCloud = [];
-
-    if(!_.isEmpty(buckets)){
-        _.forEach(buckets, function(bucket){
-            var font = 14 + (bucket.doc_count * 0.3);
-
-            tagCloud.push({
-                key: bucket.key,
-                count: bucket.doc_count,
-                font: ((font > 70) ? 70 : font) + 'px'
-            });
+          db.close();
         });
-    }
-
-    return tagCloud;
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
 };
 
-linkService.prototype.sanitizeLink = function(link, id, user, options){
-    if(_.isEmpty(link.tags)){
-        delete link.tags;
-    }
+linkService.getTagsCount = function (user) {
+  return new Promise((resolve, reject) => {
+    mongo.connect().then(db => {
+      let query = {};
 
-    //Convert to HTML with markdown
-    if(options.markdown){
-        link.description = global.showdown.makeHtml(link.description);
-    }
+      const linksCollection = db.collection('links');
 
-    link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
+      const getPrivate = !!(user);
 
-    if(options.id){
-        link.id = id;
-    }
+      query['$match'] = {
+        public: true
+      };
 
-    return link;
+      // if you are logged show only your links
+      if (getPrivate) {
+        delete query['$match'];
+
+        query['$match'] = {
+          creator_id: user.id
+        }
+      }
+
+      linksCollection.aggregate([
+        query,
+        {$unwind: "$tags"},
+        {$group: {_id: {_id: "$tags", tag: "$tags"}, count: {$sum: 1}}},
+        {$match: {count: {$gte: 1}}},
+        {$project: {_id: 0, id: "$_id.tag", count: 1}}
+      ]).toArray().then(results => {
+        const tags = (results !== null) ? results : [];
+
+        const tagCloud = tags.map(tag => {
+          const font = 14 + (tag.count * 0.3);
+
+          return {
+            key: tag.id,
+            count: tag.count,
+            font: ((font > 70) ? 70 : font) + 'px'
+          };
+        });
+
+        resolve(tagCloud);
+
+        db.close();
+      });
+    }).catch(err => {
+      reject(err);
+    });
+  });
 };
 
-module.exports = new linkService();
+/**
+ * Sanitize links
+ * @param link
+ * @param id
+ * @param user
+ * @param options
+ * @returns {*}
+ */
+linkService.sanitizeLink = function (link, id, user, options) {
+  if (_.isEmpty(link.tags)) {
+    delete link.tags;
+  }
+
+  //Convert to HTML with markdown
+  if (options.markdown) {
+    link.description = showdownConverter.makeHtml(link.description);
+  }
+
+  link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
+
+  return link;
+};
+
+module.exports = linkService;

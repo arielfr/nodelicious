@@ -1,15 +1,17 @@
-var express = require('express'),
-    index = express.Router(),
-    _ = require('lodash'),
-    moment = require('moment'),
-    linkService = require('../services/links');
+const express = require('express');
+const index = express.Router();
+const _ = require('lodash');
+const moment = require('moment');
+const linkService = require('../services/links');
 
-index.get('/tagcloud', function(req, res, next){
-    var model = {};
+index.get('/tagcloud', function (req, res, next) {
+  linkService.getTagsCount(req.user).then(cloud => {
+    const model = {
+      cloud: cloud
+    };
 
-    model.cloud = linkService.getTagsCount(req.user);
-
-    res.renderSync('tagcloud', model);
+    res.customRender('tagcloud', model);
+  });
 });
 
 module.exports = index;
