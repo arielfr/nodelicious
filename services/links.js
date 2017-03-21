@@ -17,8 +17,8 @@ linkService.getLinks = function (user, from, size, options) {
 
   const me = this;
   const esClient = global.esClient;
-  const from = (from) ? from : 0;
-  const size = (size) ? size : 25;
+  from = (from) ? from : 0;
+  size = (size) ? size : 25;
   const getPrivate = (user) ? true : false;
 
   let query = {};
