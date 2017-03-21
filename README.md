@@ -9,6 +9,8 @@ You need to have install the following applications:
 - Redis (This is to store the user session)
 - MongoDB (This will be the main database)
 
+If you want to install it easily, you can use Docker to install Redis and MongoDB. Just map the default ports.
+
 ## Installation
 
 You need to run the createMongoCollections to create all the collections with indexs necessary
