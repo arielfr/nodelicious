@@ -1,356 +1,356 @@
-var bodyBuilder = require('bodybuilder'),
-    bcrypt = require('bcrypt'),
-    _ = require('lodash'),
-    moment = require('moment'),
-    uuid = require('node-uuid'),
-    sync = require('synchronize');
+const bodyBuilder = require('bodybuilder');
+const bcrypt = require('bcrypt');
+const _ = require('lodash');
+const moment = require('moment');
+const uuid = require('node-uuid');
+const sync = require('synchronize');
+const showdownConverter = require('../initializers/showdown');
 
-var linkService = function(){};
+let linkService = {};
 
-linkService.prototype.getLinks = function(user, from, size, options){
-    options = _.merge({}, {
-        id: false,
-        markdown: true,
-        filters: {}
-    }, options);
+linkService.getLinks = function (user, from, size, options) {
+  options = _.merge({}, {
+    id: false,
+    markdown: true,
+    filters: {}
+  }, options);
 
-    var me = this,
-        esClient = global.esClient,
-        from = (from) ? from : 0,
-        size = (size) ? size : 25,
-        getPrivate = (user) ? true : false;
+  const me = this;
+  const esClient = global.esClient;
+  const from = (from) ? from : 0;
+  const size = (size) ? size : 25;
+  const getPrivate = (user) ? true : false;
 
-    var query = {};
+  let query = {};
 
-    query = {
-        "from": from,
-        "size": size,
-        "sort": [
-            {
-                "created_date": {
-                    "order": "desc"
-                }
+  query = {
+    "from": from,
+    "size": size,
+    "sort": [
+      {
+        "created_date": {
+          "order": "desc"
+        }
+      }
+    ],
+    "query": {
+      "bool": {
+        "should": [],
+        "must": [
+          {
+            "term": {
+              "public": {
+                "value": true
+              }
             }
+          }
+        ]
+      }
+    }
+  };
+
+  if (getPrivate) {
+    query.query.bool.must = [];
+
+    query.query.bool.should.push({
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "public": {
+                "value": false
+              }
+            }
+          },
+          {
+            "term": {
+              "creator_id": {
+                "value": user.id
+              }
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  //Adding filters
+  if (!_.isEmpty(options.filters)) {
+    if (options.filters.tags) {
+      query.query.bool.must.push({
+        "terms": {
+          "tags": options.filters.tags
+        }
+      });
+    }
+    if (options.filters.text) {
+      query.query.bool.must.push({
+        "query_string": {
+          "fields": ["title", "link", "description", "tags"],
+          "query": options.filters.text
+        }
+      });
+    }
+  }
+
+  console.log(JSON.stringify(query));
+
+  const results = esClient.searchSync({
+    index: 'nodelicious',
+    type: 'links',
+    body: query
+  });
+
+  //Add the id to the user element
+  const links = _(_(results.hits.hits).map(function (hit) {
+    return me.sanitizeLink(hit._source, hit._id, user, options);
+  })).value();
+
+  return {
+    links: links,
+    total: results.hits.total
+  };
+};
+
+linkService.getLinkByUUID = function (uuid, user, options) {
+  const me = this;
+  const esClient = global.esClient;
+
+  options = _.merge({}, {
+    id: false,
+    markdown: true
+  }, options);
+
+  let link = esClient.searchSync({
+    index: 'nodelicious',
+    type: 'links',
+    body: new bodyBuilder().filter('term', 'uuid', uuid).build()
+  }).hits.hits;
+
+  //Add the id to the user element
+  link = _(_(link).map(function (hit) {
+    return me.sanitizeLink(hit._source, hit._id, user, options);
+  })).first();
+
+  return link;
+};
+
+linkService.getLinksTotal = function (user) {
+  const me = this;
+  const esClient = global.esClient;
+  const getPrivate = (user) ? true : false;
+
+  var query = {
+    "query": {
+      "bool": {
+        "should": [
+          {
+            "term": {
+              "public": {
+                "value": true
+              }
+            }
+          }
         ],
-        "query": {
-            "bool": {
-                "should": [],
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": true
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    };
-
-    if(getPrivate){
-        query.query.bool.must = [];
-
-        query.query.bool.should.push({
-            "bool": {
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "creator_id": {
-                                "value": user.id
-                            }
-                        }
-                    }
-                ]
-            }
-        });
+        "must": []
+      }
     }
+  };
 
-    //Adding filters
-    if(!_.isEmpty(options.filters)){
-        if(options.filters.tags){
-            query.query.bool.must.push({
-                "terms": {
-                    "tags": options.filters.tags
+  if (getPrivate) {
+    query.query.bool.should.push({
+      "bool": {
+        "must": [
+          {
+            "term": {
+              "public": {
+                "value": false
+              }
+            }
+          },
+          {
+            "term": {
+              "creator_id": {
+                "value": user.id
+              }
+            }
+          }
+        ]
+      }
+    });
+  }
+
+  const totalLinks = esClient.countSync({
+    index: 'nodelicious',
+    type: 'links',
+    body: query
+  }).count;
+
+  return totalLinks;
+};
+
+linkService.createLink = function (user, link) {
+  const esClient = global.esClient;
+
+  link.created_date = moment().toDate();
+  link.creator_id = user.id;
+
+  esClient.indexSync({
+    index: 'nodelicious',
+    type: 'links',
+    body: link
+  });
+
+  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
+
+  return link;
+};
+
+linkService.updateLink = function (user, link) {
+  const me = this;
+  const esClient = global.esClient;
+  const fromEs = me.getLinkByUUID(link.uuid, user, {id: true});
+
+  link.creator_id = fromEs.creator_id;
+
+  if (user.id != link.creator_id) {
+    throw new Error('Permission errors');
+  }
+
+  esClient.updateSync({
+    index: 'nodelicious',
+    type: 'links',
+    id: fromEs.id,
+    body: {
+      doc: link
+    }
+  });
+
+  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
+
+  return link;
+};
+
+linkService.deleteLinkByUUID = function (user, uuid) {
+  const esClient = global.esClient;
+  const link = this.getLinkByUUID(uuid, user, {id: true});
+
+  esClient.deleteSync({
+    index: 'nodelicious',
+    type: 'links',
+    id: link.id
+  });
+
+  sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
+};
+
+linkService.getTagsCount = function (user) {
+  const esClient = global.esClient;
+
+  let query = {
+    "size": 0,
+    "aggs": {
+      "tags": {
+        "terms": {
+          "field": "tags",
+          "size": 1000
+        }
+      }
+    }
+  };
+
+  if (user) {
+    query.query = {
+      "bool": {
+        "should": [
+          {
+            "term": {
+              "public": {
+                "value": false
+              }
+            }
+          },
+          {
+            "bool": {
+              "must": [
+                {
+                  "term": {
+                    "public": {
+                      "value": true
+                    }
+                  }
+                },
+                {
+                  "term": {
+                    "creator_id": {
+                      "value": user.id
+                    }
+                  }
                 }
-            });
-        }
-        if(options.filters.text){
-            query.query.bool.must.push({
-                "query_string": {
-                    "fields": ["title", "link", "description", "tags"],
-                    "query": options.filters.text
-                }
-            });
-        }
-    }
-
-    console.log(JSON.stringify(query))
-
-    var results = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
-    });
-
-    //Add the id to the user element
-    var links = _(_(results.hits.hits).map(function(hit){
-        return me.sanitizeLink(hit._source, hit._id, user, options);
-    })).value();
-
-    return {
-        links: links,
-        total: results.hits.total
-    };
-};
-
-linkService.prototype.getLinkByUUID = function(uuid, user, options){
-    var me = this,
-        esClient = global.esClient;
-
-    options = _.merge({}, {
-        id: false,
-        markdown: true
-    }, options);
-
-    var link = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: new bodyBuilder().filter('term', 'uuid', uuid).build()
-    }).hits.hits;
-
-    //Add the id to the user element
-    link = _(_(link).map(function(hit){
-        return me.sanitizeLink(hit._source, hit._id, user, options);
-    })).first();
-
-    return link;
-};
-
-linkService.prototype.getLinksTotal = function(user){
-    var me = this,
-        esClient = global.esClient,
-        getPrivate = (user) ? true : false;
-
-    var query = {
-        "query": {
-            "bool": {
-                "should": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": true
-                            }
-                        }
-                    }
-                ],
-                "must": []
+              ]
             }
-        }
-    };
-
-    if(getPrivate){
-        query.query.bool.should.push({
-            "bool": {
-                "must": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "term": {
-                            "creator_id": {
-                                "value": user.id
-                            }
-                        }
-                    }
-                ]
+          }
+        ]
+      }
+    }
+  } else {
+    query.query = {
+      bool: {
+        must: [
+          {
+            term: {
+              public: {
+                value: true
+              }
             }
-        });
+          }
+        ]
+      }
     }
+  }
 
-    var totalLinks = esClient.countSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
-    }).count;
+  const tags = esClient.searchSync({
+    index: 'nodelicious',
+    type: 'links',
+    body: query
+  });
 
-    return totalLinks;
-};
+  const buckets = tags.aggregations.tags.buckets;
 
-linkService.prototype.createLink = function(user, link){
-    var esClient = global.esClient;
+  const tagCloud = [];
 
-    link.created_date = moment().toDate();
-    link.creator_id = user.id;
+  if (!_.isEmpty(buckets)) {
+    _.forEach(buckets, function (bucket) {
+      const font = 14 + (bucket.doc_count * 0.3);
 
-    esClient.indexSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: link
+      tagCloud.push({
+        key: bucket.key,
+        count: bucket.doc_count,
+        font: ((font > 70) ? 70 : font) + 'px'
+      });
     });
+  }
 
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-
-    return link;
+  return tagCloud;
 };
 
-linkService.prototype.updateLink = function(user, link){
-    var me = this,
-        esClient = global.esClient,
-        fromEs = me.getLinkByUUID(link.uuid, user, {id: true});
+linkService.sanitizeLink = function (link, id, user, options) {
+  if (_.isEmpty(link.tags)) {
+    delete link.tags;
+  }
 
-    link.creator_id = fromEs.creator_id;
+  //Convert to HTML with markdown
+  if (options.markdown) {
+    link.description = showdownConverter.makeHtml(link.description);
+  }
 
-    if(user.id != link.creator_id){
-        throw new Error('Permission errors');
-    }
+  link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
 
-    esClient.updateSync({
-        index: 'nodelicious',
-        type: 'links',
-        id: fromEs.id,
-        body: {
-            doc: link
-        }
-    });
+  if (options.id) {
+    link.id = id;
+  }
 
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-
-    return link;
+  return link;
 };
 
-linkService.prototype.deleteLinkByUUID = function(user, uuid){
-    var esClient = global.esClient;
-
-    var link = this.getLinkByUUID(uuid, user, {id: true});
-
-    esClient.deleteSync({
-        index: 'nodelicious',
-        type: 'links',
-        id: link.id
-    });
-
-    sync.await(setTimeout(sync.defer(), global.config.get('elasticsearch.delay')));
-};
-
-linkService.prototype.getTagsCount = function(user){
-    var esClient = global.esClient;
-
-    var query = {
-        "size": 0,
-        "aggs": {
-            "tags": {
-                "terms": {
-                    "field": "tags",
-                    "size": 1000
-                }
-            }
-        }
-    };
-
-    if(user){
-        query.query = {
-            "bool": {
-                "should": [
-                    {
-                        "term": {
-                            "public": {
-                                "value": false
-                            }
-                        }
-                    },
-                    {
-                        "bool": {
-                            "must": [
-                                {
-                                    "term": {
-                                        "public": {
-                                            "value": true
-                                        }
-                                    }
-                                },
-                                {
-                                    "term": {
-                                        "creator_id": {
-                                            "value": user.id
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                ]
-            }
-        }
-    }else{
-        query.query = {
-            bool: {
-                must: [
-                    {
-                        term: {
-                            public: {
-                                value: true
-                            }
-                        }
-                    }
-                ]
-            }
-        }
-    }
-
-    var tags = esClient.searchSync({
-        index: 'nodelicious',
-        type: 'links',
-        body: query
-    });
-
-    var buckets = tags.aggregations.tags.buckets;
-
-    var tagCloud = [];
-
-    if(!_.isEmpty(buckets)){
-        _.forEach(buckets, function(bucket){
-            var font = 14 + (bucket.doc_count * 0.3);
-
-            tagCloud.push({
-                key: bucket.key,
-                count: bucket.doc_count,
-                font: ((font > 70) ? 70 : font) + 'px'
-            });
-        });
-    }
-
-    return tagCloud;
-};
-
-linkService.prototype.sanitizeLink = function(link, id, user, options){
-    if(_.isEmpty(link.tags)){
-        delete link.tags;
-    }
-
-    //Convert to HTML with markdown
-    if(options.markdown){
-        link.description = global.showdown.makeHtml(link.description);
-    }
-
-    link.isOwner = (user) ? ((user.id == link.creator_id) ? true : false) : false;
-
-    if(options.id){
-        link.id = id;
-    }
-
-    return link;
-};
-
-module.exports = new linkService();
+module.exports = linkService;

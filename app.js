@@ -1,26 +1,20 @@
-var express = require('express'),
-    path = require('path'),
-    superExpress = require('superexpress'),
-    config = require('config'),
-    moment = require('moment'),
-    app = express(),
-    port = process.env.APP_PORT || 3000;
+const express = require('express');
+const path = require('path');
+const superExpress = require('superexpress');
+const config = require('config');
+const moment = require('moment');
+const logger = require('./initializers/logger.js');
+const app = express();
+const port = process.env.APP_PORT || 3000;
 
-//Crating global variables
-global.config = config;
-global.__basedir = __dirname;
+const baseDirectory = __dirname;
 
 //Setting up momentjs library locale
 //moment.locale('es');
 
-//Initializers
-require('./initializers/logger.js')(app);
-require('./initializers/elasticsearch.js')(app);
-require('./initializers/showdown.js')(app);
-
 //Middlewares
 require('./middleware/custom-express.js')(app);
-require('./middleware/view-engine')(app);
+require('./middleware/view-engine')(app, baseDirectory);
 require('./middleware/statics.js')(app);
 require('./middleware/bodyparser.js')(app);
 require('./middleware/cookieparser.js')(app);
@@ -32,7 +26,7 @@ require('./middleware/localization.js')(app);
 require('./middleware/custom-renderer.js')(app);
 
 //Add routes
-superExpress.scanRoutes(app, path.join(global.__basedir, 'routes'));
+superExpress.scanRoutes(app, path.join(baseDirectory, 'routes'));
 
 //404 Not Found Handler
 require('./middleware/not-found-handler.js')(app);
@@ -40,6 +34,6 @@ require('./middleware/not-found-handler.js')(app);
 require('./middleware/error-handler.js')(app);
 
 //Starting application
-app.listen(port, function(){
-    global.log.info('[%s] Nodelicious listening to port %s', global.config.get('environment'), port);
+app.listen(port, function () {
+  logger.info('[%s] Nodelicious listening to port %s', config.get('environment'), port);
 });

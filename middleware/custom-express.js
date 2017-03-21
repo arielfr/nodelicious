@@ -1,12 +1,14 @@
-module.exports = function(app){
-    app.use(function(req, res, next){
-        //Do not log static urls
-        var regex = /^\/(css|js|fonts|images)\//;
+const logger = require('../initializers/logger.js');
 
-        if(!regex.test(req.url)){
-            global.log.info('[%s] %s', req.method, req.url);
-        }
+module.exports = function (app) {
+  app.use(function (req, res, next) {
+    //Do not log static urls
+    const regex = /^\/(css|js|fonts|images)\//;
 
-        next();
-    });
+    if (!regex.test(req.url)) {
+      logger.info('[%s] %s', req.method, req.url);
+    }
+
+    next();
+  });
 };

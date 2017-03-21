@@ -1,45 +1,46 @@
-var express = require('express'),
-    index = express.Router(),
-    _ = require('lodash'),
-    moment = require('moment'),
-    linkService = require('../services/links'),
-    utilService = require('../services/util');
+const express = require('express');
+const _ = require('lodash');
+const moment = require('moment');
+const linkService = require('../services/links');
+const utilService = require('../services/util');
 
-index.post('/search', function(req, res, next){
-    var text = req.body.text;
+const index = express.Router();
 
-    if(!text){
-        res.redirect('/');
-        return;
-    }
+index.post('/search', function (req, res, next) {
+  const text = req.body.text;
 
-    res.redirect(301, '/?text=' + utilService.toPathVariable(text));
+  if (!text) {
+    res.redirect('/');
+    return;
+  }
+
+  res.redirect(301, '/?text=' + utilService.toPathVariable(text));
 });
 
-index.get('/', function(req, res, next){
-    var model = {},
-        tagFilter = (req.query.tag) ? (Array.isArray(req.query.tag)) ? req.query.tag.map(function(text){
-            return utilService.fixSpaces(text);
+index.get('/', function (req, res, next) {
+  let model = {},
+    tagFilter = (req.query.tag) ? (Array.isArray(req.query.tag)) ? req.query.tag.map(function (text) {
+          return utilService.fixSpaces(text);
         }) : [utilService.fixSpaces(req.query.tag)] : req.query.tag,
-        textFilter = (req.query.text) ? utilService.fixSpaces(req.query.text) : req.query.text;
+    textFilter = (req.query.text) ? utilService.fixSpaces(req.query.text) : '';
 
-    //Replace invalid characters
-    textFilter = textFilter.replace(/[^a-zA-Z0-9\s\.\ñáéíóúÁÉÍÓÚ]*/g, '');
+  //Replace invalid characters
+  textFilter = textFilter.replace(/[^a-zA-Z0-9\s\.\ñáéíóúÁÉÍÓÚ]*/g, '');
 
-    var filters = {
-        tags: tagFilter,
-        text: textFilter
-    };
+  const filters = {
+    tags: tagFilter,
+    text: textFilter
+  };
 
-    model.results = linkService.getLinks(req.user, 0, 100, {
-        filters: filters
-    });
+  model.results = linkService.getLinks(req.user, 0, 100, {
+    filters: filters
+  });
 
-    model.filters = filters;
+  model.filters = filters;
 
-    model.total = linkService.getLinksTotal(req.user);
+  model.total = linkService.getLinksTotal(req.user);
 
-    res.renderSync('index', model);
+  res.renderSync('index', model);
 });
 
 module.exports = index;

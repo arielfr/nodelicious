@@ -11,6 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^0.8.7",
+    "bluebird": "^3.5.0",
     "body-parser": "^1.15.1",
     "bodybuilder": "^1.10.0",
     "bunyan": "^1.8.1",
@@ -35,6 +36,7 @@
     "less-loader": "^2.2.3",
     "lodash": "^4.13.1",
     "moment": "^2.13.0",
+    "mongodb": "^2.2.25",
     "node-uuid": "^1.4.7",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",

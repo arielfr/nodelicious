@@ -1,17 +1,17 @@
-var _ = require('lodash');
+const _ = require('lodash');
 
-var service = function(){};
+const utils = {};
 
 /**
  * Sanitize path variable
  * @param pathVariable
  * @returns {*}
  */
-service.prototype.sanitizePathVariable = function(pathVariable){
-    if(!pathVariable){
-        return pathVariable;
-    }
-    return pathVariable.replace(/\s/g, "-").toLowerCase();
+utils.sanitizePathVariable = function (pathVariable) {
+  if (!pathVariable) {
+    return pathVariable;
+  }
+  return pathVariable.replace(/\s/g, "-").toLowerCase();
 };
 
 /**
@@ -19,11 +19,11 @@ service.prototype.sanitizePathVariable = function(pathVariable){
  * @param pathVariable
  * @returns {*}
  */
-service.prototype.toPathVariable = function(pathVariable){
-    if(!pathVariable){
-        return pathVariable;
-    }
-    return encodeURI(pathVariable.replace(/\s/g, "-").toLowerCase());
+utils.toPathVariable = function (pathVariable) {
+  if (!pathVariable) {
+    return pathVariable;
+  }
+  return encodeURI(pathVariable.replace(/\s/g, "-").toLowerCase());
 };
 
 /**
@@ -31,11 +31,11 @@ service.prototype.toPathVariable = function(pathVariable){
  * @param pathVariable
  * @returns {*}
  */
-service.prototype.fixSpaces = function(pathVariable){
-    if(!pathVariable){
-        return pathVariable;
-    }
-    return pathVariable.replace(/\-/g, " ").toLowerCase();
+utils.fixSpaces = function (pathVariable) {
+  if (!pathVariable) {
+    return pathVariable;
+  }
+  return pathVariable.replace(/\-/g, " ").toLowerCase();
 };
 
-module.exports = new service();
+module.exports = utils;

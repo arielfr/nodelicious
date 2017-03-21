@@ -1,62 +1,66 @@
-var passport = require('passport'),
-    session = require('express-session'),
-    localStrategy = require('passport-local').Strategy,
-    redisStore = require('connect-redis')(session),
-    sync = require('synchronize'),
-    bcrypt = require('bcrypt'),
-    _ = require('lodash'),
-    userService = require('../services/users'),
-    moment = require('moment');
+const passport = require('passport');
+const session = require('express-session');
+const localStrategy = require('passport-local').Strategy;
+const redisStore = require('connect-redis')(session);
+const sync = require('synchronize');
+const bcrypt = require('bcrypt');
+const _ = require('lodash');
+const userService = require('../services/users');
+const moment = require('moment');
+const logger = require('../initializers/logger.js');
+const config = require('config');
 
-module.exports = function(app){
-    var redisSessionStore = new redisStore({
-        host: global.config.get('redis.host'),
-        port: global.config.get('redis.port'),
-        db: 1,
-        ttl: 60 * 60 //1 Hour
-    });
+module.exports = function (app) {
+  const redisSessionStore = new redisStore({
+    host: config.get('redis.host'),
+    port: config.get('redis.port'),
+    db: 1,
+    ttl: 60 * 60 //1 Hour
+  });
 
-    app.use(session({
-        store: redisSessionStore,
-        secret: 'patas',
-        resave: false,
-        saveUninitialized: false
-    }));
+  app.use(session({
+    store: redisSessionStore,
+    secret: 'nodelicious',
+    resave: false,
+    saveUninitialized: false
+  }));
 
-    app.use(passport.initialize());
-    app.use(passport.session());
+  app.use(passport.initialize());
+  app.use(passport.session());
 
-    passport.serializeUser(function (user, done) {
-        done(null, user);
-    });
+  passport.serializeUser(function (user, done) {
+    done(null, user);
+  });
 
-    passport.deserializeUser(function (user, done) {
-        done(null, user);
-    });
+  passport.deserializeUser(function (user, done) {
+    done(null, user);
+  });
 
-    //Local strategy
-    passport.use(new localStrategy(
-        {usernameField: 'email', passReqToCallback: true},
-        function(req, email, password, done){
-            sync.fiber(function(){
-                try{
-                    var user = userService.getUserByEmail(email);
+  //Local strategy
+  passport.use(new localStrategy({
+      usernameField: 'email',
+      passReqToCallback: true
+    },
+    function (req, email, password, done) {
+      sync.fiber(function () {
+        try {
+          const user = userService.getUserByEmail(email);
 
-                    if( _.isEmpty(user) ){
-                        throw new Error('The user with email ' + email + ' doesnt exists');
-                    }
+          if (_.isEmpty(user)) {
+            throw new Error('The user with email ' + email + ' doesnt exists');
+          }
 
-                    if( !bcrypt.compareSync(password, user.password) ){
-                        throw new Error('The password is not valid');
-                    }
+          if (!bcrypt.compareSync(password, user.password)) {
+            throw new Error('The password is not valid');
+          }
 
-                    global.log.debug('El usuario %s ha ingresado exitosamente', user.email);
+          logger.debug('El usuario %s ha ingresado exitosamente', user.email);
 
-                    return done(null, user);
-                }catch(e){
-                    return done(e, false);
-                }
-            });
+          return done(null, user);
+        } catch (e) {
+          return done(e, false);
         }
-    ));
+      });
+    }
+  ));
 };

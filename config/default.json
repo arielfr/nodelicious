@@ -17,10 +17,15 @@
     "host": "localhost",
     "port": 6379
   },
-  "page": {
+   "page": {
     "title": "Nodelicious - Online Bookmark",
     "navbar": {
       "title": "Nodelicious"
     }
+  },
+  "mongo": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "nodelicious"
   }
 }

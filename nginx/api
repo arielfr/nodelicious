@@ -5,8 +5,8 @@ upstream server-name {
 server {
   listen 80 default_server;
   listen [::]:80 default_server ipv6only=on;
-  server_name quedatemessi.com.ar;
-  server_name www.quedatemessi.com.ar;
+  server_name nodelicious.com.ar;
+  server_name www.nodelicious.com.ar;
   server_name localhost;
   client_max_body_size 20M;
   add_header X-Whom aws;

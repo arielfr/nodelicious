@@ -1,8 +1,8 @@
-var showdown = require('showdown');
-require('showdown-youtube')
+const showdown = require('showdown');
+require('showdown-youtube');
 
-module.exports = function(app){
-    global.showdown = new showdown.Converter({
-        extensions: ['youtube']
-    });
-};
+const showDownConverter = new showdown.Converter({
+  extensions: ['youtube']
+});
+
+module.exports = showDownConverter;
