@@ -77,7 +77,9 @@ linkService.getLinks = function (user, from, size, options) {
         resolve({
           links: links,
           total: links.length
-        })
+        });
+
+        db.close();
       });
     }).catch(err => {
       reject(err);
@@ -115,6 +117,8 @@ linkService.getLinkByUUID = function (uuid, user, options) {
         }
 
         resolve(linkToUpdate);
+
+        db.close();
       });
     }).catch(err => {
       reject(err);
@@ -153,6 +157,8 @@ linkService.getLinksTotal = function (user) {
         const total = (count !== null) ? count : 0;
 
         resolve(total);
+
+        db.close();
       });
     }).catch(err => {
       reject(err);
@@ -208,6 +214,7 @@ linkService.updateLink = function (user, link) {
             $set: link
           }).then(response => {
           resolve(link);
+
           db.close();
         });
       });
@@ -237,6 +244,7 @@ linkService.deleteLinkByUUID = function (user, uuid) {
           _id: new ObjectID(existingLink._id)
         }).then(response => {
           resolve(true);
+
           db.close();
         });
       });
@@ -288,6 +296,8 @@ linkService.getTagsCount = function (user) {
         });
 
         resolve(tagCloud);
+
+        db.close();
       });
     }).catch(err => {
       reject(err);
