@@ -2,7 +2,7 @@
   "name": "nodelicious",
   "version": "1.0.0",
   "description": "Nodelicious - Online Bookmark",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "start": "nodejs app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
