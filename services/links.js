@@ -48,6 +48,10 @@ linkService.getLinks = function (user, from, size, options) {
       //Adding filters
       if (!_.isEmpty(options.filters)) {
         if (options.filters.tags) {
+          if(_.isEmpty(query['$and'])){
+            query['$and'] = [];
+          }
+
           query['$and'].push({
             tags: {
               $in: options.filters.tags
@@ -56,6 +60,10 @@ linkService.getLinks = function (user, from, size, options) {
         }
 
         if (options.filters.text) {
+          if(_.isEmpty(query['$and'])){
+            query['$and'] = [];
+          }
+
           query['$and'].push({
             $text: {
               $search: options.filters.text
