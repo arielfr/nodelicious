@@ -6,6 +6,7 @@ const ExtractStyles = new ExtractTextPlugin('css/[name].css');
 module.exports = {
   entry: {
     index: './webpack/src/scripts/index.js',
+    errors: './webpack/src/scripts/errors.js',
     login: './webpack/src/scripts/login.js',
     view: './webpack/src/scripts/view.js',
     editor: './webpack/src/scripts/editor.js',

@@ -1,9 +1,19 @@
 {{#extend "main"}}
     {{#content "header" mode="append"}}
+        <link rel="stylesheet" href="/css/errors.css">
     {{/content}}
     {{#content "body"}}
-        <p>404</p>
+        {{#extend "modules/navbar"}}{{/extend}}
+        <div class="container">
+            <div class="row">
+                <div class="col-xs-12">
+                    <h1>404</h1>
+                    <p>Can't find the page you are looking for</p>
+                </div>
+            </div>
+        </div>
     {{/content}}
-    {{#content "footer" mode="append"}}
+    {{#content "scripts" mode="append"}}
+        <script type="application/javascript" src="/js/errors.js"></script>
     {{/content}}
 {{/extend}}
