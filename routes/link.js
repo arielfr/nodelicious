@@ -4,7 +4,6 @@ const moment = require('moment');
 const linkService = require('../services/links');
 const authFilter = require('../middleware/authentication-filter');
 const urlRegex = require('url-regex');
-const sync = require('synchronize');
 const request = require('sync-request');
 const uuid = require('node-uuid');
 

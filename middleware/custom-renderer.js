@@ -1,4 +1,3 @@
-const sync = require('synchronize');
 const config = require('config');
 const _ = require('lodash');
 
