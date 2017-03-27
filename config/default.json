@@ -14,10 +14,6 @@
     "port": 27017,
     "database": "nodelicious"
   },
-  "redis": {
-    "host": "localhost",
-    "port": 6379
-  },
    "page": {
     "title": "Nodelicious - Online Bookmark",
     "navbar": {

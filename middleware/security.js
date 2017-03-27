@@ -1,7 +1,7 @@
 const passport = require('passport');
 const session = require('express-session');
 const localStrategy = require('passport-local').Strategy;
-const redisStore = require('connect-redis')(session);
+const MongoStore = require('connect-mongo')(session);
 const sync = require('synchronize');
 const bcrypt = require('bcrypt');
 const _ = require('lodash');
@@ -11,15 +11,13 @@ const logger = require('../initializers/logger.js');
 const config = require('config');
 
 module.exports = function (app) {
-  const redisSessionStore = new redisStore({
-    host: config.get('redis.host'),
-    port: config.get('redis.port'),
-    db: 1,
-    ttl: 60 * 60 //1 Hour
+  const sessionStore = new MongoStore({
+    url: 'mongodb://' + config.get('mongo.host') + ':' + config.get('mongo.port') + '/' + config.get('mongo.database'),
+    ttl: 60 * 60 // 1 Hour
   });
 
   app.use(session({
-    store: redisSessionStore,
+    store: sessionStore,
     secret: 'nodelicious',
     resave: false,
     saveUninitialized: false
