@@ -1,6 +1,6 @@
 # Nodelicious
 
-Deliciouse / Shaarli Bookmark Application (NodeJS) Edit
+Deliciouse / Shaarli Bookmark Application
 
 ## Applications Needed
 
