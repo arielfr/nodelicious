@@ -20,9 +20,11 @@
                 <li>
                     <a href="/tagcloud">TAG CLOUD</a>
                 </li>
-                <li>
-                    <a href="#" class="search">SEARCH</a>
-                </li>
+                {{#if searcherEnabled}}
+                    <li>
+                        <a href="#" class="search">SEARCH</a>
+                    </li>
+                {{/if}}
             </ul>
 
             <ul class="nav navbar-nav navbar-right">

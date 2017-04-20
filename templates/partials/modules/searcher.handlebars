@@ -1,0 +1,11 @@
+{{#if searcherEnabled}}
+    <div class="searcher">
+        <form action="/search" method="POST">
+            <div class="form-group">
+                <input type="text" class="form-control" name="text" placeholder="Text to find" value="" autocomplete="off"/>
+                <button type="submit" class="btn btn-primary btn-raised pull-right">Search</button>
+                <button class="btn btn-default pull-right cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+{{/if}}

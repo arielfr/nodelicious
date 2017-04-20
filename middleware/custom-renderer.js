@@ -14,6 +14,7 @@ module.exports = function (app) {
       return new Promise((resolve, reject) => {
         model.isLogged = (req.user) ? true : false;
         model.user = req.user;
+        model.searcherEnabled = (req.path === '/' || req.path === '/tagcloud');
 
         model = _.merge({}, defaultModel, model);
 
