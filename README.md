@@ -42,6 +42,16 @@ webpack --watch
 
 If you add a page, you need to create the JS and add it to webpack.config.js
 
+## Markdown Flavored
+
+You can use markdown on your descriptions to make it more beautiful. We use Showdown's Markdown
+
+## Youtube Videos
+
+You can also embed Youtube Videos on your description
+
+![alt tag](http://i.imgur.com/IMjuZQG.png "Youtube Videos")
+
 ## License
 
 Copyright 2017 Ariel Rey. Released under the terms of the MIT license.
