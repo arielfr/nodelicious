@@ -2,6 +2,8 @@
 
 Deliciouse / Shaarli Bookmark Application
 
+![alt tag](http://imgur.com/a/nIxlq "Nodelicious")
+
 ## Applications Needed
 
 You need to have install the following applications:
