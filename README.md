@@ -2,7 +2,7 @@
 
 Deliciouse / Shaarli Bookmark Application
 
-![alt tag](http://imgur.com/a/nIxlq "Nodelicious")
+![alt tag](http://i.imgur.com/JQb5LQN.png "Nodelicious")
 
 ## Applications Needed
 
